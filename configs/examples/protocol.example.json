@@ -1,0 +1,8 @@
+{
+  "schema": "neo-mri-protocol-1",
+  "execution_enabled": false,
+  "normalization": "standard",
+  "sdc": "off",
+  "stc": "off",
+  "t1w": "sub-demo/anat/sub-demo_T1w.nii.gz"
+}

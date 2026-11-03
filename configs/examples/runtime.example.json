@@ -1,0 +1,26 @@
+{
+  "container_image": "nipreps/fmriprep:25.2.7",
+  "execution_enabled": false,
+  "omp_nthreads": 4,
+  "nprocs": 8,
+  "memory_mb": 8000,
+  "container_memory_mb": 9000,
+  "container_cpus": 8,
+  "license_file": "secrets/license.txt",
+  "work_dir": "work/demo_s01_v1",
+  "templateflow_dir": "templateflow",
+  "output_spaces": [
+    "T1w",
+    "MNI152NLin2009cAsym:res-2"
+  ],
+  "participant_label": "demo",
+  "anat_only": false,
+  "scientific_protocol": {
+    "schema": "neo-mri-protocol-1",
+    "execution_enabled": false,
+    "normalization": "standard",
+    "sdc": "off",
+    "stc": "off",
+    "t1w": "sub-demo/anat/sub-demo_T1w.nii.gz"
+  }
+}

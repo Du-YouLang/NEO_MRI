@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "neo-mri"
+version = "0.1.0.dev1"
+description = "Independent structural MRI and task-fMRI research workflow"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "nilearn==0.11.1", "nibabel==5.3.2", "numpy==2.2.6", "scipy==1.15.2",
+  "matplotlib==3.10.6", "pandas==2.2.3", "scikit-learn==1.6.1",
+  "pillow==13.0.0", "threadpoolctl==3.7.0"
+]
+
+[project.optional-dependencies]
+test = ["pytest==9.1.1"]
+
+[project.scripts]
+neo-mri = "neo_mri_cli:main"
+neo-mri-view = "image_viewer:main"
+neo-mri-demo = "synthetic_demo:main"
+
+[tool.setuptools]
+package-dir = {"" = "code"}
+py-modules = ["neo_mri_cli", "staged_workflow", "staged_glm", "staged_glm_anatomical", "staged_report", "staged_preprocess", "model_audit", "scientific_protocol", "registration_audit", "registration_geometry", "image_viewer", "synthetic_demo"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
