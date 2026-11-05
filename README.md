@@ -1,57 +1,47 @@
-# NEO_MRI · 首版研究预览
+# NEO_MRI · T1/T2结构像发布候选
 
-结构 MRI 与基础任务态 fMRI 的分阶段研究工具。当前版本 `0.1.0.dev1`。
-T1 强度校正、脑提取、组织分割和标准化由固定版本 fMRIPrep/ANTs 等软件完成；本项目负责输入约束、显式调用、结果登记、模型审计、GLM、FDR 和报告。
+版本：**0.2.0rc1**。本轮发布只包含已经锚定的T1/T2结构流程与审核工具；DWI/CST、BOLD、GLM、SDC、DoubleScanner和Mv-SPFM不在本安装包内。没有Notebook、患者数据、模型权重、许可证或个人路径配置。
 
-这份独立共享包未包含患者影像、个人配置、FreeSurfer 许可证、历史报告或 EEG 代码。
+T1默认HD-BET 2.0.1 CPU/noTTA；SynthStrip和ANTs两个脑提取模板显式可选，不自动后备。原生脑掩膜人工批准后，导出审核T1/mask，再进行组织分割与T1→MNI，保存实际mask采用证据，结合闪烁/切片、往返与形变审核。工具固定4线程。
 
-## 安装与最小测试
+T2使用已冻结的`T2_structural_v1`。默认HD-BET脑域为主结果，T1脑域为补充/显式可选；原始强度/N4均保留，不擅自指定唯一强度方案。已有批准T1/MNI变换复用，单次组合重采样与两次插值对照保留。详见[T2说明](docs/T2_STABLE_V1.md)。
 
-使用 Python 3.12，Windows 可运行统计、审计、报告和查看器；新容器预处理须在用户自己启动的本地 Linux/WSL shell 中运行。
+## 安装
+
+使用Python 3.12，在独立环境中执行：
 
 ```powershell
 python -m venv .venv
 .venv\Scripts\python -m pip install -r requirements-lock.txt
-.venv\Scripts\python -m pip install --no-deps -e .
+.venv\Scripts\python -m pip install '.[anatomy]' --no-deps
+.venv\Scripts\python -m pip install 'SimpleITK==2.5.6' --no-deps
 .venv\Scripts\python -m pytest
-.venv\Scripts\neo-mri-demo --output ..\synthetic_demo
 ```
 
-Linux 将 `.venv\Scripts\python` 改为 `.venv/bin/python`，命令入口使用 `.venv/bin/neo-mri` 等。
-`requirements-lock.txt` 保留原分析环境的精确版本快照，未把它冒充所有平台都可安装的完整锁。若某版本在索引不可得，应记录失败并讨论，不自动替换版本。
+核心分析依赖保持原锁，不升级。HD-BET、SynthStrip、ANTs和fMRIPrep各自单独准备，不随pip自动下载模型或启动服务。HD-BET推荐独立CPU环境；fMRIPrep固定25.2.7且必须核对本地不可变镜像ID，许可证自备。
 
-合成示例包含 6×6×6 体素、100 帧随机 BOLD、模拟 confounds 和事件表。它演示真实 GLM 数值计算与复用，不验证 fMRIPrep、卒中临床定位或真实任务效应。
+## 命令与处理顺序
 
-## 分开运行
-
-相对路径统一以 `--root` 指定的工作目录为基准；不指定时使用当前目录。代码位置和数据位置可以完全分离，不需要完整 NEO 工作区或 MRI_DataQC。
-
-```text
-neo-mri status --root /analysis --config /analysis/case.local.json
-neo-mri preprocess --root /analysis --config /analysis/case.local.json
-neo-mri audit --root /analysis --config /analysis/case.local.json
-neo-mri glm --root /analysis --config /analysis/case.local.json
-neo-mri report --root /analysis --config /analysis/case.local.json
+```powershell
+neo-mri --help
+neo-mri-extract policy
+neo-mri-extract plan --config extraction.local.json
+neo-mri-mask --help
+neo-mri t1-plan --config T1.local.json
+neo-mri-t2-v1 policy
+neo-mri-t2-v1 plan --config T2.local.json
 ```
 
-只有明确的 `preprocess` 才可能启动新容器；`mode=existing` 只登记具有完成证据的既有结果。只改统计参数执行 `glm`、`report`；只改显示执行 `report`。缓存按输入、时序、引擎和参数指纹分版本；更改模型不会覆写旧结果。
+plan不运行影像计算。run需要明确的execution_enabled、有效输入与本地运行环境；Linux容器需要自己预先启动并完成资源准入，代码不启动/修复WSL或Docker。
 
-## 结构及统计图像查看
+1. 准备明确身份的三维NIfTI/BIDS和N4全头T1。本版接入已准备的N4图；不提供从任意医院DICOM到完整T1输出的一键通用转换/N4入口。
+2. 用HD-BET等生成候选，在原生红线页逐层审核；记录明确批准，必要时ITK-SNAP手修并重新审核。
+3. 导出与原始BIDS T1身份绑定的审核解剖输入，再计划anat-only fMRIPrep。例子：configs/examples/t1_case.example.json与t1_runtime.example.json；所有路径相对配置文件所在目录。
+4. 运行结束检查实际mask采用及变换输入链。通用容器启动器仍是发布候选，未在这一轮重跑真实容器验收；不能把既往专用控制器的九分支结果写成该新入口的整体验收。后端未重复导出原生mask时，需要在固定容器内采集anatomy_runtime_evidence并在T1配置提供runtime_evidence，不能复制输入冒充输出。
+5. 检查MNI闪烁/逐层切片、往返一致性及非病灶/形变；批准后才给T2配置使用。跨模态T2配准用已审T1作为个体中心，不重新拟合标准化。
 
-```text
-neo-mri-view --background /analysis/T1w.nii.gz --space native-T1 --output /analysis/T1_view.html
-neo-mri-view --background /analysis/MNI_T1w.nii.gz --overlay /analysis/z.nii.gz --space MNI152NLin2009cAsym --threshold 2.3 --output /analysis/activation_view.html
-```
+## 验证与边界
 
-输出使用 Nilearn 的 HTML 交互式正交切片。结构和叠加必须已经位于相同网格；查看器拒绝隐式配准。显示阈值不等于统计显著性，空间名称由用户明确声明，软件不从文件名猜测。本预览没有移植病例定制的四维滑块及病灶联合浏览器。
+本地证据：T1三人九分支mask/标准化对照；T2两例卒中原始/N4与两种脑域对照；另外一例健康FLAIR仅为技术演示。人工批准绑定当时的文件，不传给新个体。脑域Dice、病灶往返Dice都不是临床定位准确率。
 
-## 使用与验证边界
-
-- [独立输入、预处理和任务分析说明](docs/USAGE.md)
-- [验证范围和首版限制](docs/VALIDATION.md)
-- [协作与模块接入](CONTRIBUTING.md)
-- [代码来源、依赖及待确认的许可](NOTICE.md)
-
-CFM/SDC 的输入检查、规划和配准审计是可选功能；Dice 只是逆一致性指标，不能独自证明解剖定位准确。不要按激活体素最多挑模型。本项目不自动计算 CST 健康度或临床入组资格，也不包含完整静息态 FC/ICA 去噪流程。
-
-尚未核定代码公开许可；本候选没有擅自赋予 MIT/Apache 等授权。首次公开推送前由维护者确认来源及公开范围。
+见[发布与验收范围](docs/RELEASE_SCOPE.md)、[T1使用说明](docs/T1_MASK_REVIEW.md)、[T2稳定版本](docs/T2_STABLE_V1.md)。Jupyter分步交互封装后续再做。

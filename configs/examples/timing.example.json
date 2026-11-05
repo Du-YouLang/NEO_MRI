@@ -1,8 +1,0 @@
-{
-  "status": "CONFIRMED_SCAN_SPECIFIC_TIMING",
-  "case_id": "demo",
-  "preprocessing_fingerprint": "REPLACE_FROM_REAL_REGISTRATION",
-  "event_sha256_by_run": {
-    "movement_1": "REPLACE_WITH_REAL_EVENT_SHA256"
-  }
-}

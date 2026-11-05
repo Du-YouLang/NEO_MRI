@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "neo-mri"
-version = "0.1.0.dev1"
-description = "Independent structural MRI and task-fMRI research workflow"
+version = "0.2.0rc1"
+description = "Reviewed T1 and T2 structural MRI research workflows"
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
 dependencies = [
@@ -16,15 +16,19 @@ dependencies = [
 
 [project.optional-dependencies]
 test = ["pytest==9.1.1"]
+anatomy = ["SimpleITK==2.5.6"]
 
 [project.scripts]
-neo-mri = "neo_mri_cli:main"
-neo-mri-view = "image_viewer:main"
-neo-mri-demo = "synthetic_demo:main"
+neo-mri = "structural_cli:main"
+neo-mri-mask = "anatomy_review:main"
+neo-mri-blink = "registration_blink:main"
+neo-mri-extract = "brain_extract:main"
+neo-mri-structural = "structural_multimodal:main"
+neo-mri-t2-v1 = "t2_stable:main"
 
 [tool.setuptools]
 package-dir = {"" = "code"}
-py-modules = ["neo_mri_cli", "staged_workflow", "staged_glm", "staged_glm_anatomical", "staged_report", "staged_preprocess", "model_audit", "scientific_protocol", "registration_audit", "registration_geometry", "image_viewer", "synthetic_demo"]
+py-modules = ["anatomy_review", "anatomy_runtime_evidence", "anatomy_viewer_assets", "brain_extract", "hdbet_cpu", "multimodal_review", "registration_audit", "registration_blink", "registration_geometry", "state_io", "structural_cli", "structural_context", "structural_multimodal", "t1_preprocess", "t2_stable"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

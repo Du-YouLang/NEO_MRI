@@ -1,0 +1,16 @@
+{
+  "modality": "T2w",
+  "brain_domain": "hd_bet",
+  "source_mask": "/analysis/extraction/HD_BET/T2_brain_mask.nii.gz",
+  "source": "/analysis/raw/T2w.nii.gz",
+  "t1": "/analysis/approved/T1_fullhead_N4.nii.gz",
+  "mni": "/analysis/approved/T1_MNI.nii.gz",
+  "anatomy_review": "/analysis/reviews/native_mask_approval.json",
+  "normalization_provenance": "/analysis/reviews/normalization_provenance.json",
+  "mni_review": "/analysis/reviews/MNI_explicit_user_approval.json",
+  "mni_to_t1_pull": "/analysis/transforms/from-T1w_to-MNI_mode-image_xfm.h5",
+  "t1_to_mni_pull": "/analysis/transforms/from-MNI_to-T1w_mode-image_xfm.h5",
+  "output": "/analysis/results/T2_structural_v1",
+  "execution_enabled": false,
+  "parameters": {"threads": 4, "N4_zero_policy": "exclude_zero_up_to_1pct"}
+}

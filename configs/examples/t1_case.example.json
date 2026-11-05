@@ -1,0 +1,17 @@
+{
+  "schema": "neo-t1-anatomy-1",
+  "template_only": true,
+  "anatomy_review": "reviews/native_mask_approval.json",
+  "preprocessing": {
+    "project": "subject_project",
+    "runtime_config": "t1_runtime.local.json",
+    "reviewed_anatomy_dir": "reviewed_anatomy",
+    "expected_image_id": "sha256:REPLACE_WITH_INSPECTED_IMAGE_ID",
+    "bids_filter": {
+      "t1w": {
+        "datatype": "anat",
+        "suffix": "T1w"
+      }
+    }
+  }
+}
