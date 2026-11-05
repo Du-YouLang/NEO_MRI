@@ -5,8 +5,9 @@ This portable backend is NEW and has not had a real-image container acceptance r
 """
 from pathlib import Path
 import json, os, re, subprocess, time
-from staged_workflow import read, write, resolve, source_root, StageError, sha
-from scientific_protocol import arguments, validate_inputs
+from structural_context import read, write, resolve, source_root, StageError, sha
+from structural_context import arguments, validate_inputs
+from anatomy_review import require_approved,check_file,checked_mask
 
 IMAGE='nipreps/fmriprep:25.2.7'
 
@@ -29,6 +30,21 @@ def build_plan(c):
     if not re.fullmatch(r'sha256:[0-9a-f]{64}',digest):raise StageError('Require locally inspected immutable Docker image ID')
     if not re.fullmatch(r'[A-Za-z0-9]+',runtime['participant_label']):raise StageError('Invalid participant label')
     root=source_root(c);work=resolve(runtime['work_dir']);templates=resolve(runtime['templateflow_dir'])
+    ignore=root/'bids/.bidsignore'
+    if not ignore.is_file() or 'neo_bids_filter.json' not in [line.strip() for line in ignore.read_text(encoding='utf-8').splitlines()]:
+        raise StageError('Add the exact neo_bids_filter.json entry to bids/.bidsignore; auxiliary configuration is not an MRI sequence')
+    if not c.get('anatomy_review') or not p.get('reviewed_anatomy_dir'):
+        raise StageError('Human T1 mask review and reviewed_anatomy_dir required before new preprocessing/normalization')
+    review=require_approved(resolve(c['anatomy_review']))
+    anatomy_dir=resolve(p['reviewed_anatomy_dir']);export=read(anatomy_dir/'reviewed_anatomy.json')
+    if export.get('schema')!='neo-reviewed-anatomy-export-1' or export['review']['sha256']!=sha(resolve(c['anatomy_review'])):
+        raise StageError('Reviewed derivative export belongs to a different approval')
+    for k in ['review','raw_t1','t1','mask']:check_file(export[k])
+    if export['t1']['sha256']!=review['t1']['sha256'] or export['mask']['sha256']!=review['mask']['sha256']:
+        raise StageError('Exported anatomy differs from approved anatomy')
+    selected_raw=root/'bids'/runtime['scientific_protocol']['t1w']
+    if not selected_raw.is_file() or sha(selected_raw)!=export['raw_t1']['sha256']:
+        raise StageError('Reviewed anatomy is not bound to the selected raw BIDS T1')
     if work==root or work.is_relative_to(root) or root.is_relative_to(work):raise StageError('Work directory must be separate from input/output project')
     protocol=runtime['scientific_protocol'];scientific=arguments(protocol)
     spaces=runtime['output_spaces']
@@ -42,15 +58,16 @@ def build_plan(c):
          '--shm-size','4g','--user',f'{os.getuid()}:{os.getgid()}' if hasattr(os,'getuid') else '0:0']
     for name,value in [('OMP_NUM_THREADS','4'),('ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS','4'),('OPENBLAS_NUM_THREADS','4'),('MKL_NUM_THREADS','4'),('TEMPLATEFLOW_HOME','/templateflow')]:
         cmd+=['-e',name+'='+value]
-    cmd+=mount(root/'bids','/data',True)+mount(output,'/out')+mount(work,'/work')+mount(templates,'/templateflow')+mount(license_file,'/license.txt',True)
+    cmd+=mount(root/'bids','/data',True)+mount(output,'/out')+mount(work,'/work')+mount(templates,'/templateflow')+mount(license_file,'/license.txt',True)+mount(anatomy_dir,'/reviewed_anatomy',True)
     cmd += [digest,'/data','/out','participant','--participant-label',runtime['participant_label'],
             '--fs-license-file','/license.txt','--fs-no-reconall','--nprocs',str(runtime['nprocs']),
             '--omp-nthreads','4','--mem',str(runtime['memory_mb']),'-w','/work',
-            '--random-seed','20261026','--output-spaces',*spaces,'--bids-filter-file','/data/neo_bids_filter.json',*scientific]
-    if runtime.get('anat_only'):cmd+=['--anat-only']
+            '--random-seed','20261026','--derivatives','reviewed_anatomy=/reviewed_anatomy','--output-spaces',*spaces,'--bids-filter-file','/data/neo_bids_filter.json',*scientific]
+    if runtime.get('anat_only') is not True:raise StageError('Structural release requires anat_only=true')
+    cmd+=['--anat-only']
     return dict(status='COMMAND_PLAN_ONLY_NO_DOCKER_PROBED',arguments=cmd,runtime=runtime,
                 image_id=digest,project=str(root),work=str(work),templateflow=str(templates),license_path=str(license_file),
-                new_backend_real_data_verified=False)
+                reviewed_mask_sha256=review['mask']['sha256'],new_backend_real_data_verified=False)
 
 def launch_new(c):
     plan=build_plan(c);runtime=plan['runtime'];root=Path(plan['project'])
@@ -82,3 +99,6 @@ def launch_new(c):
     write(logs/'preprocessing_status.json',dict(exit_code=code,elapsed_seconds=time.monotonic()-started,
         actual_container_verification='EXIT_CODE_ONLY_REQUIRES_IMAGE_AND_METHOD_REVIEW'))
     if code:raise StageError('Preprocessing failed; container and outputs retained. No automatic retry or service changes.')
+    from anatomy_review import verify_applied_mask
+    evidence=verify_applied_mask(resolve(c['anatomy_review']),out,runtime_evidence=resolve(c['runtime_evidence']) if c.get('runtime_evidence') else None)
+    write(logs/'approved_mask_application.json',evidence)

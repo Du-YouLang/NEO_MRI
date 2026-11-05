@@ -1,0 +1,10 @@
+{
+  "case_id": "demo",
+  "title": "Demo full-head native T1 mask review",
+  "t1": "/analysis/T1_fullhead_N4.nii.gz",
+  "output": "/analysis/Quality_check/T1-mask-review-v1",
+  "candidates": [
+    {"id": "hd_bet_cpu_no_tta", "label": "HD-BET CPU noTTA (preferred; review required)", "mask": "/analysis/extraction/hd-bet-v1/mask.nii.gz"},
+    {"id": "synthstrip", "label": "SynthStrip (optional)", "mask": "/analysis/extraction/synthstrip-v1/mask.nii.gz"}
+  ]
+}

@@ -14,7 +14,7 @@
     "MNI152NLin2009cAsym:res-2"
   ],
   "participant_label": "demo",
-  "anat_only": false,
+  "anat_only": true,
   "scientific_protocol": {
     "schema": "neo-mri-protocol-1",
     "execution_enabled": false,

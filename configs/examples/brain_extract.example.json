@@ -1,0 +1,12 @@
+{
+  "method": "hd_bet_cpu_no_tta",
+  "t1": "/analysis/T1_fullhead_N4.nii.gz",
+  "output": "/analysis/extraction/hd-bet-v1",
+  "threads": 4,
+  "timeout_seconds": 1800,
+  "execution_enabled": false,
+  "runtime": {
+    "python": "/analysis/env/bin/python",
+    "model_dir": "/analysis/models/hd_bet_model"
+  }
+}

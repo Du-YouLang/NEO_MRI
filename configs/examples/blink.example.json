@@ -1,0 +1,11 @@
+{
+  "anatomy_review": "/analysis/review/approved-v1.json",
+  "normalization_provenance": "/analysis/normalization/actual-inputs.json",
+  "normalized_t1": "/analysis/normalization/T1_MNI.nii.gz",
+  "template": "/analysis/templates/MNI152NLin2009cAsym_res-2_T1w.nii.gz",
+  "space": "MNI152NLin2009cAsym:res-2",
+  "cut_coords_world_mm": [0, -20, 30],
+  "interval_seconds": 0.7,
+  "output": "/analysis/Quality_check/registration-blink-v1",
+  "scope": "REAL_SAVED_IMAGES_REQUIRES_APPROVED_ANATOMY"
+}
