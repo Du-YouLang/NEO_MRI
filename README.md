@@ -45,3 +45,9 @@ plan不运行影像计算。run需要明确的execution_enabled、有效输入�
 本地证据：T1三人九分支mask/标准化对照；T2两例卒中原始/N4与两种脑域对照；另外一例健康FLAIR仅为技术演示。人工批准绑定当时的文件，不传给新个体。脑域Dice、病灶往返Dice都不是临床定位准确率。
 
 见[发布与验收范围](docs/RELEASE_SCOPE.md)、[T1使用说明](docs/T1_MASK_REVIEW.md)、[T2稳定版本](docs/T2_STABLE_V1.md)。Jupyter分步交互封装后续再做。
+
+## 病灶分割接口（研究预览）
+
+另提供 `neo-mri-lesion` 独立命令，支持 3D Slicer 人工勾画、外部 SynthStroke 候选、版本审核与标准 NIfTI 掩膜导出。模型、权重和推理环境由使用者自行准备；不更改现有 T1/T2 入口、冻结引擎或脑掩膜审核。T2/FLAIR 背景复用现有配准结果，不新增另一套配准。
+
+见[病灶接口](docs/LESION.md)、[Slicer 操作指南](docs/SLICER_GUIDE.md)、[SynthStroke 接口](docs/SYNTHSTROKE.md)及[本次验证范围](docs/LESION_VALIDATION.md)。CFM 自动接入及功能影像工具本次不发布。
