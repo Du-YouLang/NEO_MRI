@@ -1,0 +1,14 @@
+{
+  "schema": "neo-synthstroke-1",
+  "template_only": true,
+  "lesion_config": "lesion.local.json",
+  "workspace": "results/synthstroke_candidates",
+  "python": "PATH_TO_EXTERNAL_PYTHON",
+  "python_paths": [],
+  "model_source": "PATH_TO_EXTERNAL_SYNTHSTROKE_SOURCE",
+  "model_dir": "PATH_TO_EXTERNAL_MODEL_DIRECTORY",
+  "variant": "baseline",
+  "device": "cpu",
+  "threads": 6,
+  "patch_size": 128
+}

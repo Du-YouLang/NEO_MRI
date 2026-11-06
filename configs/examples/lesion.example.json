@@ -1,0 +1,13 @@
+{
+  "schema": "neo-lesion-1",
+  "template_only": true,
+  "case_id": "demo",
+  "lesion_kind": "stroke",
+  "reference_t1": "inputs/T1w.nii.gz",
+  "review_images": [
+    {"modality": "FLAIR", "image": "inputs/FLAIR_in_T1w.nii.gz", "space": "selected-T1w"}
+  ],
+  "initial_mask": null,
+  "workspace": "results/lesion",
+  "editor": {"type": "slicer", "executable": "PATH_TO_INSTALLED_SLICER"}
+}
