@@ -22,8 +22,11 @@ def load_config(path, root):
         raise StageError('Unknown SynthStroke schema or keys')
     if c.get('template_only'):
         raise StageError('Fill the SynthStroke template and remove template_only')
-    for key in ['lesion_config', 'workspace', 'python', 'model_source', 'model_dir']:
+    for key in ['lesion_config', 'workspace', 'model_source', 'model_dir']:
         c[key] = resolve(c[key])
+    # venv/bin/python can link to the base interpreter. Keep the selected
+    # environment path for execution; hashing still reads the executable bytes.
+    c['python'] = os.path.abspath(root / Path(c['python']))
     if not isinstance(c.get('python_paths', []), list):
         raise StageError('python_paths must be a list of external dependency directories')
     c['python_paths'] = [resolve(p) for p in c.get('python_paths', [])]
