@@ -1,0 +1,194 @@
+{
+  "template_only": true,
+  "schema": "neo-bold-stages-2",
+  "data_root": "./data",
+  "case_id": "subject_s01",
+  "workspace": "data/subject/subject_s01/results/task_fMRI/bold_v2",
+  "preprocessing": {
+    "mode": "existing",
+    "project": "data/subject/subject_s01/results/preprocessing/reviewed_fmriprep"
+  },
+  "analysis": {
+    "timing": {
+      "status": "paused",
+      "reason": "Await scan-specific event, task and preprocessing verification",
+      "interpretation": "Pending",
+      "evidence": ""
+    },
+    "runs": [
+      {
+        "id": "mi01",
+        "task_id": "MI",
+        "estimand_id": "imagery_vs_rest",
+        "stc": "off",
+        "reference_space": "MNI152NLin2009cAsym",
+        "tr_seconds": 2,
+        "dynamic_condition": "imagery",
+        "bold": "sub-example/ses-01/func/sub-example_ses-01_task-rhand_run-01_space-MNI152NLin2009cAsym_res-2_desc-preproc_bold.nii.gz",
+        "bold_json": "sub-example/ses-01/func/sub-example_ses-01_task-rhand_run-01_space-MNI152NLin2009cAsym_res-2_desc-preproc_bold.json",
+        "mask": "sub-example/ses-01/func/sub-example_ses-01_task-rhand_run-01_space-MNI152NLin2009cAsym_res-2_desc-brain_mask.nii.gz",
+        "confounds": "sub-example/ses-01/func/sub-example_ses-01_task-rhand_run-01_desc-confounds_timeseries.tsv",
+        "confounds_json": "sub-example/ses-01/func/sub-example_ses-01_task-rhand_run-01_desc-confounds_timeseries.json",
+        "events": "local/mi01_events.tsv",
+        "tr_evidence": "local/mi01_bold.json",
+        "contrast": {
+          "imagery": 1
+        },
+        "sdc": "off",
+        "method_review": "local/mi01_method_review.json",
+        "viewer_anatomy": "sub-example/ses-01/anat/sub-example_ses-01_space-MNI152NLin2009cAsym_res-2_desc-preproc_T1w.nii.gz",
+        "viewer_anatomy_mask": "sub-example/ses-01/anat/sub-example_ses-01_space-MNI152NLin2009cAsym_res-2_desc-brain_mask.nii.gz"
+      },
+      {
+        "id": "pm01",
+        "task_id": "PM",
+        "estimand_id": "passive_vs_rest",
+        "stc": "off",
+        "reference_space": "MNI152NLin2009cAsym",
+        "tr_seconds": 2,
+        "dynamic_condition": "passive",
+        "bold": "sub-example/ses-01/func/sub-example_ses-01_task-rhand_run-02_space-MNI152NLin2009cAsym_res-2_desc-preproc_bold.nii.gz",
+        "bold_json": "sub-example/ses-01/func/sub-example_ses-01_task-rhand_run-02_space-MNI152NLin2009cAsym_res-2_desc-preproc_bold.json",
+        "mask": "sub-example/ses-01/func/sub-example_ses-01_task-rhand_run-02_space-MNI152NLin2009cAsym_res-2_desc-brain_mask.nii.gz",
+        "confounds": "sub-example/ses-01/func/sub-example_ses-01_task-rhand_run-02_desc-confounds_timeseries.tsv",
+        "confounds_json": "sub-example/ses-01/func/sub-example_ses-01_task-rhand_run-02_desc-confounds_timeseries.json",
+        "events": "local/pm01_events.tsv",
+        "tr_evidence": "local/pm01_bold.json",
+        "contrast": {
+          "passive": 1
+        },
+        "sdc": "off",
+        "method_review": "local/pm01_method_review.json",
+        "viewer_anatomy": "sub-example/ses-01/anat/sub-example_ses-01_space-MNI152NLin2009cAsym_res-2_desc-preproc_T1w.nii.gz",
+        "viewer_anatomy_mask": "sub-example/ses-01/anat/sub-example_ses-01_space-MNI152NLin2009cAsym_res-2_desc-brain_mask.nii.gz"
+      }
+    ],
+    "groups": [],
+    "comparisons": [
+      {
+        "id": "mi_pm_static",
+        "left": "mi01",
+        "right": "pm01",
+        "model": "GLM_TD"
+      },
+      {
+        "id": "mi_pm_dynamic",
+        "left": "mi01",
+        "right": "pm01",
+        "model": "DoubleScanner_AB"
+      }
+    ],
+    "kernels_mm": [
+      0,
+      2,
+      3
+    ],
+    "double_scanner": {
+      "lags_seconds": [
+        -12.0,
+        -11.5,
+        -11.0,
+        -10.5,
+        -10.0,
+        -9.5,
+        -9.0,
+        -8.5,
+        -8.0,
+        -7.5,
+        -7.0,
+        -6.5,
+        -6.0,
+        -5.5,
+        -5.0,
+        -4.5,
+        -4.0,
+        -3.5,
+        -3.0,
+        -2.5,
+        -2.0,
+        -1.5,
+        -1.0,
+        -0.5,
+        0.0,
+        0.5,
+        1.0,
+        1.5,
+        2.0,
+        2.5,
+        3.0,
+        3.5,
+        4.0,
+        4.5,
+        5.0,
+        5.5,
+        6.0,
+        6.5,
+        7.0,
+        7.5,
+        8.0,
+        8.5,
+        9.0,
+        9.5,
+        10.0
+      ],
+      "duration_ratios": [
+        0.2,
+        0.25,
+        0.3,
+        0.35,
+        0.4,
+        0.45,
+        0.5,
+        0.55,
+        0.6,
+        0.65,
+        0.7,
+        0.75,
+        0.8,
+        0.85,
+        0.9,
+        0.95,
+        1.0,
+        1.05,
+        1.1,
+        1.15,
+        1.2,
+        1.25,
+        1.3,
+        1.35,
+        1.4,
+        1.45,
+        1.5
+      ],
+      "selection": "raw_r2"
+    },
+    "fir_delays_tr": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "statistics": {
+      "hrf_model": "spm + derivative",
+      "smoothing_fwhm_mm": 2,
+      "noise_model": "ar1",
+      "compcor_components": 5,
+      "fd_threshold_mm": 0.5,
+      "dvars_threshold": 1.5,
+      "contrast": {
+        "imagery": 1
+      },
+      "fdr_q": 0.05
+    },
+    "double_scanner_ab": {
+      "seed": 10001,
+      "device": "cpu"
+    }
+  },
+  "report": {
+    "title": "Task BOLD with DoubleScanner A/B",
+    "participant_group": "unassigned"
+  }
+}

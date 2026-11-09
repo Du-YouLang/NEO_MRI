@@ -1,6 +1,8 @@
 # NEO_MRI · T1/T2结构像发布候选
 
-版本：**0.2.0rc1**。本轮发布只包含已经锚定的T1/T2结构流程与审核工具；DWI/CST、BOLD、GLM、SDC、DoubleScanner和Mv-SPFM不在本安装包内。没有Notebook、患者数据、模型权重、许可证或个人路径配置。
+版本：**0.2.0rc1**。已发布的 0.2.0rc1 安装包继续使用结构工具入口。
+
+本地代码检出增加独立的任务 BOLD 入口 python run_bold.py，支持已登记衍生文件、静态 GLM＋时间导数、DoubleScanner A/B、FIR 和自动报告。详见 [BOLD A/B 操作与审核](docs/BOLD_AB.md) 和 [任务 BOLD Notebook](notebooks/Task_BOLD.ipynb)。
 
 T1默认HD-BET 2.0.1 CPU/noTTA；SynthStrip和ANTs两个脑提取模板显式可选，不自动后备。原生脑掩膜人工批准后，导出审核T1/mask，再进行组织分割与T1→MNI，保存实际mask采用证据，结合闪烁/切片、往返与形变审核。工具固定4线程。
 

@@ -1,0 +1,18 @@
+:root{font-family:"Segoe UI","Microsoft YaHei",sans-serif;color:#183246;background:#edf3f7}body{margin:0;line-height:1.62}
+main{max-width:1220px;margin:auto;padding:28px 18px 70px}header,section{background:#fff;border:1px solid #cedee8;border-radius:12px;padding:20px 25px;margin-bottom:17px}
+h1,h2,h3{line-height:1.24;margin:7px 0 13px}h3{margin-top:22px}small,.meta{color:#476172}a{color:#1b607e}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:.93rem}th,td{text-align:left;border-bottom:1px solid #dae7ee;padding:8px 9px}thead{background:#e8f1f7}
+.scroll{overflow:auto}img{width:100%;height:auto}.cards{display:grid;grid-template-columns:1fr 1fr;gap:10px}.cards div{background:#eaf3f6;border-radius:8px;padding:10px 14px}.cards strong{font-size:1.55rem;display:block}
+.controls{display:flex;gap:8px 16px;align-items:center;flex-wrap:wrap;margin:10px 0}.controls label{display:inline-flex;align-items:center;gap:7px}
+button,select{font:inherit;color:#19364b}select,button{background:#f0f6fa;border:1px solid #adc5d4;border-radius:5px;padding:4px 8px}
+#time{width:min(390px,45vw)}.slices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.slices figure{margin:0;min-width:0}
+.slices canvas{display:block;width:100%;height:auto;background:#10191d;cursor:crosshair;image-rendering:pixelated;touch-action:none}.slices figcaption{font-size:.9rem;color:#4a6475}
+.colorbar{display:inline-block;width:172px;height:13px;border-radius:3px;background:linear-gradient(90deg,#1a75de,#eef2f5,#db3c1e);vertical-align:middle}
+.group-row{display:grid;grid-template-columns:minmax(230px,35%) minmax(0,1fr);gap:15px}.group-row canvas#orbit{width:100%;height:auto;background:#10191d;touch-action:none;cursor:grab}
+@media(max-width:770px){main{padding:10px}header,section{padding:13px}.group-row,.cards{grid-template-columns:1fr}}
+.viewer-page main{max-width:1500px}
+.dynamic-row{display:grid;grid-template-columns:minmax(250px,34%) minmax(0,1fr);gap:16px;align-items:start}
+.dynamic-volume{margin:0}.dynamic-volume canvas{display:block;width:100%;height:auto;background:#10191d;cursor:grab;touch-action:none}
+.dynamic-volume canvas:active{cursor:grabbing}.dynamic-volume figcaption{margin-top:4px;font-size:.94rem;color:#4a6475}
+.dynamic-volume p{margin:5px 0 8px}
+@media(max-width:880px){.dynamic-row{grid-template-columns:1fr}.dynamic-volume{width:min(100%,560px)}}
