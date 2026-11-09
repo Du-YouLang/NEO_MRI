@@ -1,0 +1,117 @@
+{
+  "template_only": true,
+  "schema": "neo-bold-stages-2",
+  "data_root": "./data",
+  "case_id": "subject_s01",
+  "workspace": "data/subject/subject_s01/results/task_fMRI/bold_v2",
+  "preprocessing": {
+    "mode": "existing",
+    "project": "data/subject/subject_s01/results/preprocessing/reviewed_fmriprep"
+  },
+  "analysis": {
+    "timing": {
+      "status": "paused",
+      "reason": "Await scan-specific event, task and preprocessing verification",
+      "interpretation": "Pending",
+      "evidence": ""
+    },
+    "runs": [
+      {
+        "id": "mi01",
+        "task_id": "MI",
+        "estimand_id": "imagery_vs_rest",
+        "stc": "on",
+        "reference_space": "MNI152NLin2009cAsym",
+        "tr_seconds": 2,
+        "dynamic_condition": "imagery",
+        "bold": "sub-example/ses-01/func/sub-example_ses-01_task-rhand_run-01_space-MNI152NLin2009cAsym_res-2_desc-preproc_bold.nii.gz",
+        "bold_json": "sub-example/ses-01/func/sub-example_ses-01_task-rhand_run-01_space-MNI152NLin2009cAsym_res-2_desc-preproc_bold.json",
+        "mask": "sub-example/ses-01/func/sub-example_ses-01_task-rhand_run-01_space-MNI152NLin2009cAsym_res-2_desc-brain_mask.nii.gz",
+        "confounds": "sub-example/ses-01/func/sub-example_ses-01_task-rhand_run-01_desc-confounds_timeseries.tsv",
+        "confounds_json": "sub-example/ses-01/func/sub-example_ses-01_task-rhand_run-01_desc-confounds_timeseries.json",
+        "events": "local/mi01_events.tsv",
+        "tr_evidence": "local/mi01_bold.json",
+        "contrast": {
+          "imagery": 1
+        }
+      },
+      {
+        "id": "pm01",
+        "task_id": "PM",
+        "estimand_id": "passive_vs_rest",
+        "stc": "on",
+        "reference_space": "MNI152NLin2009cAsym",
+        "tr_seconds": 2,
+        "dynamic_condition": "passive",
+        "bold": "sub-example/ses-01/func/sub-example_ses-01_task-rhand_run-02_space-MNI152NLin2009cAsym_res-2_desc-preproc_bold.nii.gz",
+        "bold_json": "sub-example/ses-01/func/sub-example_ses-01_task-rhand_run-02_space-MNI152NLin2009cAsym_res-2_desc-preproc_bold.json",
+        "mask": "sub-example/ses-01/func/sub-example_ses-01_task-rhand_run-02_space-MNI152NLin2009cAsym_res-2_desc-brain_mask.nii.gz",
+        "confounds": "sub-example/ses-01/func/sub-example_ses-01_task-rhand_run-02_desc-confounds_timeseries.tsv",
+        "confounds_json": "sub-example/ses-01/func/sub-example_ses-01_task-rhand_run-02_desc-confounds_timeseries.json",
+        "events": "local/pm01_events.tsv",
+        "tr_evidence": "local/pm01_bold.json",
+        "contrast": {
+          "passive": 1
+        }
+      }
+    ],
+    "groups": [],
+    "comparisons": [
+      {
+        "id": "mi_pm_static",
+        "left": "mi01",
+        "right": "pm01",
+        "model": "GLM_TD"
+      },
+      {
+        "id": "mi_pm_dynamic",
+        "left": "mi01",
+        "right": "pm01",
+        "model": "DoubleScanner"
+      }
+    ],
+    "kernels_mm": [
+      0,
+      2,
+      3
+    ],
+    "double_scanner": {
+      "lags_seconds": [
+        -2,
+        0,
+        2,
+        4
+      ],
+      "duration_ratios": [
+        0.75,
+        1,
+        1.25
+      ],
+      "selection": "white_partial_r2"
+    },
+    "fir_delays_tr": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "statistics": {
+      "hrf_model": "spm + derivative",
+      "smoothing_fwhm_mm": 2,
+      "noise_model": "ar1",
+      "compcor_components": 5,
+      "fd_threshold_mm": 0.5,
+      "dvars_threshold": 1.5,
+      "contrast": {
+        "imagery": 1
+      },
+      "fdr_q": 0.05
+    }
+  },
+  "report": {
+    "title": "Task BOLD analysis",
+    "participant_group": "unassigned"
+  }
+}

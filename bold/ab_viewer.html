@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DoubleScanner A/B 动态 BOLD</title><link rel="stylesheet" href="../ab_viewer.css"></head>
+<body class="viewer-page"><main><header><small>DoubleScanner · 已审核空间 · 脑提取 T1</small>
+<h1 id="title">BOLD 逐帧重放</h1><p><a href="../../report.html">返回实验报告</a></p></header>
+<section>
+<h2>逐帧 3D 与三视图</h2>
+<div class="controls">
+<label>集合 <select id="mode"><option value="A">A 乘 1214 · BY 通过</option><option value="A_stable">A 乘 1214 · BY＋Bootstrap</option><option value="B">B 探索性 · BY 通过</option><option value="B_stable">B 探索性 · BY＋Bootstrap</option></select></label>
+<label>显示量 <select id="quantity"><option value="post">HRF 卷积后 · 预测任务 BOLD</option><option value="pre">HRF 卷积前 · 带符号任务方波</option><option value="beta">固定图 · 任务 β</option><option value="t">固定图 · 任务 t</option><option value="branch">固定图 · 回退 / 扫描</option></select></label>
+<label>分支 <select id="branch"><option value="all">全部</option><option value="scan">扫描保留</option><option value="fallback">回退</option></select></label>
+<label>色阶 <input id="contrast" type="range" min=".2" max="2.5" step=".05" value="1"></label>
+</div>
+<div class="controls"><button id="play" type="button">播放</button><label>时间 <input id="time" type="range" min="0" value="0"></label><output id="time-label"></output></div>
+<div class="dynamic-row">
+<figure class="dynamic-volume">
+<canvas id="dynamic-orbit" width="560" height="440" aria-label="当前帧三维任务信号"></canvas>
+<figcaption id="volume-label">三维任务信号</figcaption>
+<p class="meta">拖动旋转，滚轮缩放。灰色点为脑轮廓。</p>
+<button id="reset-dynamic" type="button">重置 3D 视角</button>
+</figure>
+<div id="dynamic" class="slices"></div>
+</div>
+<p><span id="bar" class="colorbar"></span> <span id="scale"></span></p>
+<p id="status" class="meta"></p>
+<p class="meta">3D 与三视图共用时间轴、筛选和色阶。切片上滚轮切层，点击一个切面同步定位其他切面。红蓝表示正负值。切到「回退 / 扫描」可直接查看来源，回退为琥珀色，扫描保留为青色。时间轴来自保存的采样时钟。任务窗由该 run 登记的事件定义，估计时间群为描述性结果。</p>
+</section>
+<section id="landmarks">
+<h2>共同起点 / 终点掩膜</h2>
+<div class="controls"><label>体素群 <select id="group"></select></label><a id="download" hidden>下载该群 NIfTI</a></div>
+<p id="group-label" class="meta"></p>
+<div class="group-row"><div><canvas id="orbit" width="540" height="430" aria-label="旋转三维掩膜"></canvas><p class="meta">拖动旋转，滚轮缩放。3D 中灰色是脑轮廓，绿色是体素群。T1 三视图用橙黄色标出同一体素群。</p><button id="reset" type="button">重置视角</button></div>
+<div id="group-slices" class="slices"></div></div>
+</section></main>
+<script src="viewer_data.js"></script><script src="../ab_viewer.js"></script><p>3D 使用同步点云，色彩与数值从同一帧读取。</p></body></html>
