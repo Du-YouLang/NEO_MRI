@@ -1,0 +1,47 @@
+{
+  "label": {
+    "path": "replace/atlas_binary.nii.gz",
+    "sha256": "<replace-with-actual-sha256>"
+  },
+  "reference": {
+    "path": "replace/corrected_b0.nii.gz",
+    "sha256": "<replace-with-actual-sha256>"
+  },
+  "source_space": "MNI152NLin6Asym",
+  "anatomy": {
+    "dwi_to_t1_ras": [
+      [
+        1,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        1,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        1,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        1
+      ]
+    ],
+    "mni2009c_to_t1_image_h5": {
+      "path": "replace/from-MNI152NLin2009cAsym_to-T1w_mode-image_xfm.h5",
+      "sha256": "<replace-with-actual-sha256>"
+    },
+    "mni6_to_mni2009c_image_h5": {
+      "path": "replace/from-MNI152NLin6Asym_to-MNI152NLin2009cAsym_mode-image_xfm.h5",
+      "sha256": "<replace-with-actual-sha256>"
+    }
+  }
+}
