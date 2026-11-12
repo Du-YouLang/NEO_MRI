@@ -26,10 +26,11 @@ neo-mri-blink = "registration_blink:main"
 neo-mri-extract = "brain_extract:main"
 neo-mri-structural = "structural_multimodal:main"
 neo-mri-t2-v1 = "t2_stable:main"
+neo-mri-t2-lesion-v1 = "t2_lesion_propagation:main"
 
 [tool.setuptools]
 package-dir = {"" = "code"}
-py-modules = ["anatomy_review", "anatomy_runtime_evidence", "anatomy_viewer_assets", "brain_extract", "hdbet_cpu", "multimodal_review", "registration_audit", "registration_blink", "registration_geometry", "state_io", "structural_cli", "structural_context", "structural_multimodal", "t1_preprocess", "t2_stable", "lesion_cli", "lesion_state", "lesion_workflow", "lesion_slicer", "lesion_synthstroke", "synthstroke_worker"]
+py-modules = ["anatomy_review", "anatomy_runtime_evidence", "anatomy_viewer_assets", "brain_extract", "hdbet_cpu", "multimodal_review", "registration_audit", "registration_blink", "registration_geometry", "state_io", "structural_cli", "structural_context", "structural_multimodal", "t1_preprocess", "t2_stable", "lesion_cli", "lesion_state", "lesion_workflow", "lesion_slicer", "lesion_synthstroke", "synthstroke_worker", "t2_lesion_propagation"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
