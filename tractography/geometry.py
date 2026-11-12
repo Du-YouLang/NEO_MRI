@@ -82,7 +82,9 @@ def mapped_label(config, base, output):
     pull = atlas_pull(config["anatomy"], base, config["source_space"])
     result = resample(source, reference, pull, label=True)
     sitk.WriteImage(result, str(output))
-    if not np.array_equal(sitk.GetArrayViewFromImage(sitk.ReadImage(str(output))),
+    # The NumPy view borrows the SimpleITK image buffer.
+    readback = sitk.ReadImage(str(output))
+    if not np.array_equal(sitk.GetArrayViewFromImage(readback),
                           sitk.GetArrayViewFromImage(result)):
         raise ValueError("Mapped label did not survive readback")
     return {"output": str(output), "sha256": digest(output),
