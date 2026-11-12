@@ -1,0 +1,135 @@
+{
+  "schema": "neo-tractography-1",
+  "reference": {
+    "path": "replace/corrected_b0.nii.gz",
+    "sha256": "<replace-with-actual-sha256>"
+  },
+  "anatomy": {
+    "dwi_to_t1_ras": [
+      [
+        1,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        1,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        1,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        1
+      ]
+    ],
+    "mni2009c_to_t1_image_h5": {
+      "path": "replace/from-MNI152NLin2009cAsym_to-T1w_mode-image_xfm.h5",
+      "sha256": "<replace-with-actual-sha256>"
+    },
+    "mni6_to_mni2009c_image_h5": {
+      "path": "replace/from-MNI152NLin6Asym_to-MNI152NLin2009cAsym_mode-image_xfm.h5",
+      "sha256": "<replace-with-actual-sha256>"
+    }
+  },
+  "gate_support": {
+    "path": "replace/common_support.nii.gz",
+    "sha256": "<replace-with-actual-sha256>"
+  },
+  "ribbon": {
+    "path": "replace/ribbon_on_dwi.nii.gz",
+    "sha256": "<replace-with-actual-sha256>"
+  },
+  "gates": {
+    "Tang_pons_L": {
+      "path": "replace/Tang_pons_L.nii.gz",
+      "sha256": "<replace-with-actual-sha256>"
+    },
+    "Tang_pons_R": {
+      "path": "replace/Tang_pons_R.nii.gz",
+      "sha256": "<replace-with-actual-sha256>"
+    },
+    "Tang_medulla_L": {
+      "path": "replace/Tang_medulla_L.nii.gz",
+      "sha256": "<replace-with-actual-sha256>"
+    },
+    "Tang_medulla_R": {
+      "path": "replace/Tang_medulla_R.nii.gz",
+      "sha256": "<replace-with-actual-sha256>"
+    },
+    "Navigator_mRt_L": {
+      "path": "replace/Navigator_mRt_L.nii.gz",
+      "sha256": "<replace-with-actual-sha256>"
+    },
+    "Navigator_mRt_R": {
+      "path": "replace/Navigator_mRt_R.nii.gz",
+      "sha256": "<replace-with-actual-sha256>"
+    },
+    "Navigator_sMRt_L": {
+      "path": "replace/Navigator_sMRt_L.nii.gz",
+      "sha256": "<replace-with-actual-sha256>"
+    },
+    "Navigator_sMRt_R": {
+      "path": "replace/Navigator_sMRt_R.nii.gz",
+      "sha256": "<replace-with-actual-sha256>"
+    },
+    "Boyne_GRN_L": {
+      "path": "replace/Boyne_GRN_L.nii.gz",
+      "sha256": "<replace-with-actual-sha256>"
+    },
+    "Boyne_GRN_R": {
+      "path": "replace/Boyne_GRN_R.nii.gz",
+      "sha256": "<replace-with-actual-sha256>"
+    }
+  },
+  "slab_mm": 3,
+  "runs": [
+    {
+      "id": "ST_iFOD2_L_M1",
+      "model": "ST_iFOD2",
+      "side": "L",
+      "origin": "M1",
+      "seed_mask": {
+        "path": "replace/M1_L_seed.nii.gz",
+        "sha256": "<replace-with-actual-sha256>"
+      },
+      "tracking_support": {
+        "path": "replace/tracking_support.nii.gz",
+        "sha256": "<replace-with-actual-sha256>"
+      },
+      "parent": {
+        "path": "replace/parent.tck",
+        "sha256": "<replace-with-actual-sha256>"
+      },
+      "seed_log": {
+        "path": "replace/parent.seeds.txt",
+        "sha256": "<replace-with-actual-sha256>"
+      },
+      "attempts": 200000,
+      "saved": 12500,
+      "ribbon_distance_mm": 2,
+      "plic_waypoints": {
+        "PLIC": {
+          "path": "replace/PLIC_L.nii.gz",
+          "sha256": "<replace-with-actual-sha256>"
+        },
+        "CP": {
+          "path": "replace/CP_L.nii.gz",
+          "sha256": "<replace-with-actual-sha256>"
+        },
+        "pons": {
+          "path": "replace/Tang_pons_L.nii.gz",
+          "sha256": "<replace-with-actual-sha256>"
+        }
+      }
+    }
+  ]
+}

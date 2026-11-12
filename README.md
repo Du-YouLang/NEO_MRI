@@ -4,6 +4,8 @@
 
 本地代码检出增加独立的任务 BOLD 入口 python run_bold.py，支持已登记衍生文件、静态 GLM＋时间导数、DoubleScanner A/B、FIR 和自动报告。详见 [BOLD A/B 操作与审核](docs/BOLD_AB.md) 和 [任务 BOLD Notebook](notebooks/Task_BOLD.ipynb)。
 
+CST／CRP 追踪与筛选使用独立的 python run_tractography.py 入口，可重放已存父流线并生成审核报告。详见 [操作与审核](docs/TRACTOGRAPHY.md)、[分步处理](notebooks/Tractography.ipynb)和[合成数据教程](notebooks/Tractography_Tutorial.ipynb)。
+
 T1默认HD-BET 2.0.1 CPU/noTTA；SynthStrip和ANTs两个脑提取模板显式可选，不自动后备。原生脑掩膜人工批准后，导出审核T1/mask，再进行组织分割与T1→MNI，保存实际mask采用证据，结合闪烁/切片、往返与形变审核。工具固定4线程。
 
 T2使用已冻结的`T2_structural_v1`。默认HD-BET脑域为主结果，T1脑域为补充/显式可选；原始强度/N4均保留，不擅自指定唯一强度方案。已有批准T1/MNI变换复用，单次组合重采样与两次插值对照保留。详见[T2说明](docs/T2_STABLE_V1.md)。
@@ -46,7 +48,7 @@ plan不运行影像计算。run需要明确的execution_enabled、有效输入�
 
 本地证据：T1三人九分支mask/标准化对照；T2两例卒中原始/N4与两种脑域对照；另外一例健康FLAIR仅为技术演示。人工批准绑定当时的文件，不传给新个体。脑域Dice、病灶往返Dice都不是临床定位准确率。
 
-见[发布与验收范围](docs/RELEASE_SCOPE.md)、[T1使用说明](docs/T1_MASK_REVIEW.md)、[T2稳定版本](docs/T2_STABLE_V1.md)。Jupyter分步交互封装后续再做。
+见[发布与验收范围](docs/RELEASE_SCOPE.md)、[T1使用说明](docs/T1_MASK_REVIEW.md)及[T2稳定版本](docs/T2_STABLE_V1.md)。
 
 ## 病灶分割接口（研究预览）
 

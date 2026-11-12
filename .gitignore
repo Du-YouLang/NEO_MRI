@@ -19,3 +19,8 @@ work/
 *.hdf5
 *.zip
 *.vhdx
+*.mif
+*.mif.gz
+*.tck
+*.npy
+*.npz

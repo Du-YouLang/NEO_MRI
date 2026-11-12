@@ -1,0 +1,22 @@
+{
+  "schema": "neo-tractography-fit-1",
+  "reference": {
+    "path": "replace/corrected_b0.nii.gz",
+    "sha256": "<replace-with-actual-sha256>"
+  },
+  "fit_mask": {
+    "path": "replace/fit_mask.nii.gz",
+    "sha256": "<replace-with-actual-sha256>"
+  },
+  "tensor_shell_b": 1000,
+  "csd_shell_b": 2000,
+  "tensor_shell_mif": {
+    "path": "replace/corrected_low_shell.mif",
+    "sha256": "<replace-with-actual-sha256>"
+  },
+  "csd_shell_mif": {
+    "path": "replace/corrected_high_shell.mif",
+    "sha256": "<replace-with-actual-sha256>"
+  },
+  "threads": 4
+}

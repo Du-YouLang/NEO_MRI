@@ -6,4 +6,6 @@
 
 外部工具与库各自按其许可证使用，本仓库不再分发 fMRIPrep 镜像、ANTs、FSL、FreeSurfer、Nilearn 等软件。使用者需自行取得适用的 FreeSurfer license，并仅在本地挂载。
 
+追踪入口依据 NEO 团队审核的 CST／CRP 交接协议实现。MRtrix、HMAT、XTRACT、Tang、Navigator、Boyne 和 Jülich 相关工具或图谱由使用者按各自许可准备。仓库提供合成演示。
+
 参考：[fMRIPrep 用法](https://fmriprep.org/en/25.2.3/usage.html)、[Nilearn](https://nilearn.github.io/)、[setuptools 项目配置](https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html)。fMRIPrep 链接是同系列文档参考；实际镜像仍固定为 25.2.7，并必须核实本地镜像的命令和身份。
