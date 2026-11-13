@@ -1,59 +1,113 @@
-# NEO_MRI · T1/T2结构像发布候选
+# NEO_MRI
 
-版本：**0.2.0rc1**。已发布的 0.2.0rc1 安装包继续使用结构工具入口。
+[简体中文](README_CN.md) · [Public data guide](docs/PUBLIC_DATA.md) · [Code audit](docs/REPOSITORY_AUDIT.md)
 
-本地代码检出增加独立的任务 BOLD 入口 python run_bold.py，支持已登记衍生文件、静态 GLM＋时间导数、DoubleScanner A/B、FIR 和自动报告。详见 [BOLD A/B 操作与审核](docs/BOLD_AB.md) 和 [任务 BOLD Notebook](notebooks/Task_BOLD.ipynb)。
+NEO_MRI is a research toolkit for studying structural injury, task-evoked activity and motor pathways after stroke. It gives each analysis its own entry point and saves the inputs, spatial transforms, decisions and results needed for review.
 
-CST／CRP 追踪与筛选使用独立的 python run_tractography.py 入口，可重放已存父流线并生成审核报告。详见 [操作与审核](docs/TRACTOGRAPHY.md)、[分步处理](notebooks/Tractography.ipynb)和[合成数据教程](notebooks/Tractography_Tutorial.ipynb)。
+## What you can run
 
-SMATT、HCPA Max-WLL 与 Boyne 2025 方法 C 的病灶重叠使用独立的 python run_lesionload.py 入口。详见[方法与操作](docs/LESIONLOAD.md)及[合成教程](notebooks/Lesionload_Tutorial.ipynb)。
+| Workflow | Entry point | What it produces |
+| --- | --- | --- |
+| T1 anatomy | `neo-mri-extract`, `neo-mri-mask`, `neo-mri`, `neo-mri-blink` | Brain extraction candidates and slice review, reviewed anatomical inputs, tissue maps and T1–MNI registration QC |
+| T2/FLAIR | `neo-mri-t2-v1` | T2/FLAIR aligned to the approved T1 and mapped into MNI with a composed transform. HD-BET is the default brain domain and the T1-derived brain domain is an explicit option. |
+| Lesion segmentation | `neo-mri-lesion`, `neo-mri-t2-lesion-v1` | 3D Slicer manual or external SynthStroke candidate, revision review, binary mask export and optional T2 lesion propagation |
+| Task fMRI | `python run_bold.py` | Run-by-run design QC, static GLM with temporal derivatives, dynamic DoubleScanner, FIR sensitivity analysis and HTML. Supports eligible same-task fixed effects and descriptive saved-beta comparisons. |
+| CST/CRP tractography | `python run_tractography.py` | DWI fitting/tracking plans, screening of parent streamlines, replay and HTML review |
+| Lesion load | `python run_lesionload.py` | Atlas-based SMATT overlap, HCPA Max-WLL and exploratory Boyne method C, plus report and provenance |
 
-T1默认HD-BET 2.0.1 CPU/noTTA；SynthStrip和ANTs两个脑提取模板显式可选，不自动后备。原生脑掩膜人工批准后，导出审核T1/mask，再进行组织分割与T1→MNI，保存实际mask采用证据，结合闪烁/切片、往返与形变审核。工具固定4线程。
+## Execution workflow
 
-T2使用已冻结的`T2_structural_v1`。默认HD-BET脑域为主结果，T1脑域为补充/显式可选；原始强度/N4均保留，不擅自指定唯一强度方案。已有批准T1/MNI变换复用，单次组合重采样与两次插值对照保留。详见[T2说明](docs/T2_STABLE_V1.md)。
+```mermaid
+flowchart TD
+    I["Prepare NIfTI and metadata in a separate data directory"]
+    I --> A["neo-mri-extract and neo-mri-mask: extract, inspect, approve"]
+    A --> T["neo-mri: T1 tissues and T1–MNI transforms"]
+    T --> Q["neo-mri-blink: review anatomy and transforms"]
+    Q --> S["neo-mri-t2-v1: register T2 or FLAIR via T1"]
+    S --> L["neo-mri-lesion: draw or import, review, export"]
+    Q -. "Reviewed T1 background" .-> L
+    I --> B["run_bold.py: register existing fMRIPrep outputs and per-run events"]
+    B --> V["Audit design, fit GLM, DoubleScanner and FIR"]
+    V --> R["Compare saved beta maps and build HTML"]
+    I --> D["run_tractography.py: corrected DWI fit or load saved parent tracks"]
+    Q -. "Reviewed space and transform chain" .-> D
+    D --> F["Screen by pathway gates and build HTML"]
+    L --> O["run_lesionload.py: map the lesion and calculate atlas overlap"]
+    Q -. "Reviewed transforms" .-> O
+    D -. "Optional subject-space FA with a reviewed chain" .-> O
+```
 
-## 安装
+## Repository layout
 
-使用Python 3.12，在独立环境中执行：
+```text
+code/               T1, T2, lesion review and registration tools
+bold/               Task BOLD design, models, comparisons and report
+tractography/       DWI fit, tracking, gates, replay and report
+lesionload/         Atlas manifest, overlap calculations and report
+configs/examples/   Copyable JSON templates
+notebooks/          Guided runs and tutorials
+docs/               Operating guides, public data and citations
+tests/              Synthetic regressions and wheel checks
+.github/workflows/  CPU continuous integration
+```
 
-```powershell
+## Install and prepare a case
+
+Use Python 3.12. From the repository root, activate a fresh virtual environment and install the pinned Python stack.
+
+```sh
 python -m venv .venv
-.venv\Scripts\python -m pip install -r requirements-lock.txt
-.venv\Scripts\python -m pip install '.[anatomy]' --no-deps
-.venv\Scripts\python -m pip install 'SimpleITK==2.5.6' --no-deps
-.venv\Scripts\python -m pytest
+# POSIX: source .venv/bin/activate
+# PowerShell: .venv\Scripts\Activate.ps1
+python -m pip install -r requirements-lock.txt
+python -m pip install --no-deps .
+python -m pip install --no-deps SimpleITK==2.5.6
+python -m pip install jupyterlab ipywidgets
+python -m pytest
+python -m jupyterlab
 ```
 
-核心分析依赖保持原锁，不升级。HD-BET、SynthStrip、ANTs和fMRIPrep各自单独准备，不随pip自动下载模型或启动服务。HD-BET推荐独立CPU环境；fMRIPrep固定25.2.7且必须核对本地不可变镜像ID，许可证自备。
+The wheel installs structural and lesion commands. Use the repository checkout for BOLD, tractography and lesion load. Prepare HD-BET, optional SynthStrip and ANTs extraction, fMRIPrep 25.2.7 and its local FreeSurfer licence where required. MRtrix3 is required for native tracking. Models, templates, atlases and container images have their own distribution terms.
 
-## 命令与处理顺序
+1. **Prepare local inputs.** Convert scanner exports outside this repository. Keep original files, acquisition JSON, task events and diffusion gradients together by subject and session. Check the NIfTI affine, voxel size, orientation and phase-encoding metadata before staging the inputs.
+2. **Copy a configuration.** Start from [`configs/examples/`](configs/examples/). Fill in paths, input identity and output directory. Use absolute paths for the standalone T2 and T2 lesion commands. Keep local configs and reports outside the checkout.
+3. **Run the first check.** For T1 use `neo-mri-extract plan --config <extraction.json>`, then review the candidate before `neo-mri t1-plan --config <T1.json>`. For T2 use `neo-mri-t2-v1 plan --config <T2.json>` with the reviewed T1 chain. For BOLD start at `inventory`. For diffusion start at `fit-plan` or replay a reviewed parent tractogram.
+4. **Review before reuse.** Check slices and overlays, the actual transform direction and grid, design timing, and downstream reports as applicable. A passing synthetic test or a high round-trip Dice measures a limited property. Anatomical and scientific decisions require case review.
 
-```powershell
-neo-mri --help
-neo-mri-extract policy
-neo-mri-extract plan --config extraction.local.json
-neo-mri-mask --help
-neo-mri t1-plan --config T1.local.json
-neo-mri-t2-v1 policy
-neo-mri-t2-v1 plan --config T2.local.json
-```
+## Jupyter and tutorials
 
-plan不运行影像计算。run需要明确的execution_enabled、有效输入与本地运行环境；Linux容器需要自己预先启动并完成资源准入，代码不启动/修复WSL或Docker。
+| Purpose | Step-by-step entry | Tutorial or operating guide |
+| --- | --- | --- |
+| T1 and T2/FLAIR | Structural CLI commands | [T1 review](docs/T1_MASK_REVIEW.md), [T2 stable workflow](docs/T2_STABLE_V1.md) |
+| Lesion segmentation | Lesion CLI commands | [Manual Slicer guide](docs/SLICER_GUIDE.md), [SynthStroke interface](docs/SYNTHSTROKE.md) |
+| Task fMRI | [Task BOLD](notebooks/Task_BOLD.ipynb) | [Runnable synthetic tutorial](notebooks/Task_BOLD_Tutorial.ipynb), [BOLD methods](docs/BOLD_AB.md) |
+| DWI and CST/CRP | [Tractography](notebooks/Tractography.ipynb) | [Runnable synthetic tutorial](notebooks/Tractography_Tutorial.ipynb), [tractography guide](docs/TRACTOGRAPHY.md) |
+| Lesion load | `run_lesionload.py` | [Runnable synthetic tutorial](notebooks/Lesionload_Tutorial.ipynb), [lesion load guide](docs/LESIONLOAD.md) |
 
-1. 准备明确身份的三维NIfTI/BIDS和N4全头T1。本版接入已准备的N4图；不提供从任意医院DICOM到完整T1输出的一键通用转换/N4入口。
-2. 用HD-BET等生成候选，在原生红线页逐层审核；记录明确批准，必要时ITK-SNAP手修并重新审核。
-3. 导出与原始BIDS T1身份绑定的审核解剖输入，再计划anat-only fMRIPrep。例子：configs/examples/t1_case.example.json与t1_runtime.example.json；所有路径相对配置文件所在目录。
-4. 运行结束检查实际mask采用及变换输入链。通用容器启动器仍是发布候选，未在这一轮重跑真实容器验收；不能把既往专用控制器的九分支结果写成该新入口的整体验收。后端未重复导出原生mask时，需要在固定容器内采集anatomy_runtime_evidence并在T1配置提供runtime_evidence，不能复制输入冒充输出。
-5. 检查MNI闪烁/逐层切片、往返一致性及非病灶/形变；批准后才给T2配置使用。跨模态T2配准用已审T1作为个体中心，不重新拟合标准化。
+Launch notebooks from the repository root with the environment above. They invoke the same back ends as the CLI. Structural workflows currently use the CLI with HTML QC. For public human data, the [data guide](docs/PUBLIC_DATA.md) gives HCP Young Adult routes for structural, diffusion and motor-task inputs, OpenNeuro for a BIDS task example, and ARC for genuine stroke lesions. The generated tutorials run locally without a human dataset or account.
 
-## 验证与边界
+## Branches and validation
 
-本地证据：T1三人九分支mask/标准化对照；T2两例卒中原始/N4与两种脑域对照；另外一例健康FLAIR仅为技术演示。人工批准绑定当时的文件，不传给新个体。脑域Dice、病灶往返Dice都不是临床定位准确率。
+`main` integrates the modules. The linked branches record the scope of earlier contributions. Use `main` for new work and review the diff and CPU checks in a PR. [Contribution guide](CONTRIBUTING.md)
 
-见[发布与验收范围](docs/RELEASE_SCOPE.md)、[T1使用说明](docs/T1_MASK_REVIEW.md)及[T2稳定版本](docs/T2_STABLE_V1.md)。
+| Branch | Scope |
+| --- | --- |
+| [`codex/structural-release-0.2.0rc1`](https://github.com/Du-YouLang/NEO_MRI/tree/codex/structural-release-0.2.0rc1) | T1 and T2 structural release candidate |
+| [`feat/lesion-interface-structural`](https://github.com/Du-YouLang/NEO_MRI/tree/feat/lesion-interface-structural) | Lesion segmentation and review |
+| [`fMRI-static_and_dynamic`](https://github.com/Du-YouLang/NEO_MRI/tree/fMRI-static_and_dynamic) | Static and dynamic task BOLD |
+| [`tractography`](https://github.com/Du-YouLang/NEO_MRI/tree/tractography) | CST/CRP tracking and replay |
+| [`lesionload_SMATT_Boyne2025`](https://github.com/Du-YouLang/NEO_MRI/tree/lesionload_SMATT_Boyne2025) | SMATT, HCPA and Boyne lesion load |
 
-## 病灶分割接口（研究预览）
+The [audit](docs/REPOSITORY_AUDIT.md) records the synthetic coverage, real-data qualification gaps and open spatial risks. The public BOLD command registers existing fMRIPrep derivatives and does not start fMRIPrep. The native MRtrix3 launcher still needs qualification in a real MRtrix3 environment. Research use only. See [NOTICE](NOTICE.md) for the team's code provenance and pending licensing decision.
 
-另提供 `neo-mri-lesion` 独立命令，支持 3D Slicer 人工勾画、外部 SynthStroke 候选、版本审核与标准 NIfTI 掩膜导出。模型、权重和推理环境由使用者自行准备；不更改现有 T1/T2 入口、冻结引擎或脑掩膜审核。T2/FLAIR 背景复用现有配准结果，不新增另一套配准。
+For actual anatomy runs, record which mask fMRIPrep used and inspect the T1–MNI anatomy before reusing the transforms. The portable T1 container launcher has synthetic planning and installation coverage. See [T1 validation](docs/T1_REVIEW_VALIDATION.md) and the [structural release scope](docs/RELEASE_SCOPE.md).
 
-见[病灶接口](docs/LESION.md)、[Slicer 操作指南](docs/SLICER_GUIDE.md)、[SynthStroke 接口](docs/SYNTHSTROKE.md)及[本次验证范围](docs/LESION_VALIDATION.md)。CFM 自动接入及功能影像工具本次不发布。
+## Acknowledgments
+
+We thank the NEO collaborators who developed the workflows and the participants, investigators and software teams behind the external tools and data. The [APA references and upstream repository credits](docs/ACKNOWLEDGMENTS.md) cover anatomy, lesion segmentation, task fMRI, diffusion, atlas assets and public examples.
+
+- Isensee, F., Schell, M., Pflueger, I., Brugnara, G., Bonekamp, D., Neuberger, U., Wick, A., Schlemmer, H.-P., Heiland, S., Wick, W., Bendszus, M., Maier-Hein, K. H., & Kickingereder, P. (2019). Automated brain extraction of multisequence MRI using artificial neural networks. *Human Brain Mapping, 40*(17), 4952–4964. [DOI](https://doi.org/10.1002/hbm.24750) · [HD-BET source](https://github.com/MIC-DKFZ/HD-BET)
+- Esteban, O., Markiewicz, C. J., Blair, R. W., Moodie, C. A., Isik, A. I., Erramuzpe, A., Kent, J. D., Goncalves, M., DuPre, E., Snyder, M., Oya, H., Ghosh, S. S., Wright, J., Durnez, J., Poldrack, R. A., & Gorgolewski, K. J. (2019). fMRIPrep: A robust preprocessing pipeline for functional MRI. *Nature Methods, 16*(1), 111–116. [DOI](https://doi.org/10.1038/s41592-018-0235-4) · [fMRIPrep source](https://github.com/nipreps/fmriprep)
+- Tournier, J.-D., Smith, R., Raffelt, D., Tabbara, R., Dhollander, T., Pietsch, M., Christiaens, D., Jeurissen, B., Yeh, C.-H., & Connelly, A. (2019). MRtrix3: A fast, flexible and open software framework for medical image processing and visualisation. *NeuroImage, 202*, 116137. [DOI](https://doi.org/10.1016/j.neuroimage.2019.116137) · [MRtrix3 source](https://github.com/MRtrix3/mrtrix3)
+- Gibson, M., Newman-Norlund, R., Bonilha, L., Fridriksson, J., Hickok, G., Hillis, A. E., den Ouden, D.-B., & Rorden, C. (2024). The Aphasia Recovery Cohort, an open-source chronic stroke repository. *Scientific Data, 11*, 981. [DOI](https://doi.org/10.1038/s41597-024-03819-7) · [OpenNeuro dataset v1.0.2](https://doi.org/10.18112/openneuro.ds004884.v1.0.2)
+- Van Essen, D. C., Smith, S. M., Barch, D. M., Behrens, T. E. J., Yacoub, E., & Uğurbil, K. (2013). The WU-Minn Human Connectome Project: An overview. *NeuroImage, 80*, 62–79. [DOI](https://doi.org/10.1016/j.neuroimage.2013.05.041) · [HCP data-use terms and required acknowledgment](https://www.humanconnectome.org/study/hcp-young-adult/data-use-terms)

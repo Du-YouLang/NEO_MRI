@@ -23,3 +23,4 @@ def validate_inputs(root,p):
     if not file.is_relative_to((Path(root)/'bids').resolve()) or not file.is_file():raise StageError('Selected raw T1 missing/outside BIDS')
     import nibabel as nib
     if len(nib.load(file).shape)!=3:raise StageError('T1 must be a 3D scalar image')
+    return file

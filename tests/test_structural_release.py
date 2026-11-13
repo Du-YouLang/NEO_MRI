@@ -21,6 +21,11 @@ def test_t1_plan_is_anatomy_only_and_never_launches(anatomy,monkeypatch):
     assert not plan['new_backend_real_data_verified']
     runtime['anat_only']=False;(root/'runtime.json').write_text(json.dumps(runtime))
     with pytest.raises(StageError,match='anat_only'):build_plan(c)
+    runtime['anat_only']=True
+    shutil.copy2(raw,project/'external_T1w.nii.gz')
+    runtime['scientific_protocol']['t1w']='../external_T1w.nii.gz'
+    (root/'runtime.json').write_text(json.dumps(runtime))
+    with pytest.raises(StageError,match='outside BIDS'):build_plan(c)
 
 def test_release_has_no_functional_entry_or_module():
     import tomllib
