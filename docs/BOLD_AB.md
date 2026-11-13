@@ -32,4 +32,4 @@
 
 ## 接入验收范围
 
-可移植入口使用合成双 run 检查登记、审核、拟合、比较及报告。公开影像的接入与当前教程见 [main 的数据指南](https://github.com/Du-YouLang/NEO_MRI/blob/main/docs/PUBLIC_DATA.md)。真实案例的解释依赖其事件、配准和噪声模型。
+可移植入口通过合成双 run 检查登记、设计审核、拟合、比较及报告。用 [BOLD 教程](../notebooks/Task_BOLD_Tutorial.ipynb)可复现。真实公开数据的接入方式见[数据指南](PUBLIC_DATA.md)。激活或时间峰群的解释依赖所用事件、配准和噪声模型。

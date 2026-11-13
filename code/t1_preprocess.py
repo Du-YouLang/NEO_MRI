@@ -42,11 +42,12 @@ def build_plan(c):
     for k in ['review','raw_t1','t1','mask']:check_file(export[k])
     if export['t1']['sha256']!=review['t1']['sha256'] or export['mask']['sha256']!=review['mask']['sha256']:
         raise StageError('Exported anatomy differs from approved anatomy')
-    selected_raw=root/'bids'/runtime['scientific_protocol']['t1w']
-    if not selected_raw.is_file() or sha(selected_raw)!=export['raw_t1']['sha256']:
+    protocol=runtime['scientific_protocol']
+    selected_raw=validate_inputs(root,protocol)
+    if sha(selected_raw)!=export['raw_t1']['sha256']:
         raise StageError('Reviewed anatomy is not bound to the selected raw BIDS T1')
     if work==root or work.is_relative_to(root) or root.is_relative_to(work):raise StageError('Work directory must be separate from input/output project')
-    protocol=runtime['scientific_protocol'];scientific=arguments(protocol)
+    scientific=arguments(protocol)
     spaces=runtime['output_spaces']
     if not spaces or not all(isinstance(s,str) and re.fullmatch(r'[A-Za-z0-9_:.-]+',s) for s in spaces):raise StageError('Explicit valid output spaces required')
     output=root/'derivatives/fmriprep';license_file=resolve(runtime['license_file'])
@@ -76,7 +77,6 @@ def launch_new(c):
     if not local_linux():raise StageError('Run portable preprocessing from a local Linux/WSL shell; no WSL is started automatically')
     if (root/'logs').exists() or (root/'derivatives').exists():raise StageError('Fresh project required; retain any previous outputs/logs before a separately reviewed retry')
     if not (root/'bids/dataset_description.json').is_file():raise StageError('Reviewed BIDS dataset required')
-    validate_inputs(root,runtime['scientific_protocol'])
     if not Path(plan['license_path']).is_file():raise StageError('Local license file is missing')
     work=Path(plan['work']);templates=Path(plan['templateflow'])
     if work.exists() and any(work.iterdir()):raise StageError('Fresh case-specific work directory required in this preview')

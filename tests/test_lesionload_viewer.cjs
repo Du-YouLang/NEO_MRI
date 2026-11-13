@@ -25,6 +25,9 @@ class Element {
 
 const source = fs.readFileSync(process.argv[2], "utf8");
 const scripts = [...source.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].map(match => match[1]);
+const data = JSON.parse(scripts[0]);
+const expectedOrigin = {SMATT: "M1", HCPA: "CST", Boyne2025: "Whole"}[data.method];
+assert.deepEqual([...data.origins].sort(), ["Empty", expectedOrigin].sort());
 const elements = new Map();
 const by = id => {
   if (!elements.has(id)) elements.set(id, new Element());
@@ -47,17 +50,21 @@ const globals = {
   requestAnimationFrame: callback => pending.push(callback),
 };
 const flush = () => { while (pending.length) pending.shift()(); };
+const assertBars = (panel, value) => {
+  const bars = JSON.parse(by(panel).dataset.values);
+  assert.deepEqual(bars, data.origins.map(origin => origin === expectedOrigin ? value : null));
+};
 vm.runInNewContext(scripts[1], globals);
 flush();
 assert.equal(document.documentElement.dataset.ready, "true");
 assert.equal(by("C").dataset.z, 2);
-assert.deepEqual(JSON.parse(by("C").dataset.values), [37.5, null]);
-assert.deepEqual(JSON.parse(by("D").dataset.values), [.625, null]);
+assertBars("C", 37.5);
+assertBars("D", .625);
 by("z").value = "1";
 by("z").listeners.input();
 flush();
 assert.equal(by("C").dataset.z, 1);
-assert.deepEqual(JSON.parse(by("C").dataset.values), [20, null]);
+assertBars("C", 20);
 assert.match(by("axial-title").textContent, /\+1 mm/);
 by("F").listeners.click({clientX: Number(by("F").dataset.right)});
 flush();
@@ -65,7 +72,7 @@ assert.equal(by("D").dataset.z, 4);
 by("side").value = "Right";
 by("side").listeners.change();
 flush();
-assert.deepEqual(JSON.parse(by("E").dataset.values), [0, null]);
+assertBars("E", 0);
 by("scene").listeners.keydown({key: "ArrowRight", preventDefault() {}});
 flush();
 console.log("Offline viewer controls passed DOM/canvas simulation");
