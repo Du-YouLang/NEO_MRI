@@ -1,47 +1,64 @@
-# NEO_MRI · T1/T2结构像发布候选
+# NEO_MRI · T1/T2 structural release candidate
 
-版本：**0.2.0rc1**。本轮发布只包含已经锚定的T1/T2结构流程与审核工具；DWI/CST、BOLD、GLM、SDC、DoubleScanner和Mv-SPFM不在本安装包内。没有Notebook、患者数据、模型权重、许可证或个人路径配置。
+[简体中文](README_CN.md) · [main](https://github.com/Du-YouLang/NEO_MRI/tree/main) · [Public data guide](https://github.com/Du-YouLang/NEO_MRI/blob/main/docs/PUBLIC_DATA.md)
 
-T1默认HD-BET 2.0.1 CPU/noTTA；SynthStrip和ANTs两个脑提取模板显式可选，不自动后备。原生脑掩膜人工批准后，导出审核T1/mask，再进行组织分割与T1→MNI，保存实际mask采用证据，结合闪烁/切片、往返与形变审核。工具固定4线程。
+Review native T1 brain extraction, plan anat-only fMRIPrep, inspect T1–MNI alignment and align same-session T2/FLAIR through approved T1 transforms. HD-BET CPU is the default candidate. SynthStrip and the two ANTs template choices are explicit alternatives. The T2 route preserves native and N4 comparisons.
 
-T2使用已冻结的`T2_structural_v1`。默认HD-BET脑域为主结果，T1脑域为补充/显式可选；原始强度/N4均保留，不擅自指定唯一强度方案。已有批准T1/MNI变换复用，单次组合重采样与两次插值对照保留。详见[T2说明](docs/T2_STABLE_V1.md)。
+This branch documents the earlier feature snapshot `codex/structural-release-0.2.0rc1` (`1017c09`). For the integrated version, use main.
 
-## 安装
+## Execution workflow
 
-使用Python 3.12，在独立环境中执行：
+```mermaid
+flowchart TD
+    S0["Stage NIfTI, N4 T1 and local config"]
+    S1["Extract and inspect the native mask"]
+    S2["Approve and export the mask"]
+    S3["Plan T1 anatomy and review MNI"]
+    S4["Map T2 or FLAIR through T1"]
+    S0 --> S1 --> S2 --> S3 --> S4
+```
 
-```powershell
+## Repository layout
+
+```text
+code/               Structural commands
+configs/examples/   Configuration templates
+docs/               Operating guides
+tests/              Synthetic checks
+```
+
+## Installation and input
+
+Create and activate a Python 3.12 virtual environment from the checkout, then install the dependencies.
+
+```sh
 python -m venv .venv
-.venv\Scripts\python -m pip install -r requirements-lock.txt
-.venv\Scripts\python -m pip install '.[anatomy]' --no-deps
-.venv\Scripts\python -m pip install 'SimpleITK==2.5.6' --no-deps
-.venv\Scripts\python -m pytest
+# POSIX: source .venv/bin/activate
+# PowerShell: .venv\Scripts\Activate.ps1
+python -m pip install -r requirements-lock.txt
+python -m pip install --no-deps .
+python -m pip install --no-deps SimpleITK==2.5.6
+python -m pytest
 ```
 
-核心分析依赖保持原锁，不升级。HD-BET、SynthStrip、ANTs和fMRIPrep各自单独准备，不随pip自动下载模型或启动服务。HD-BET推荐独立CPU环境；fMRIPrep固定25.2.7且必须核对本地不可变镜像ID，许可证自备。
+Prepare a staged BIDS project, a full-head N4-corrected T1w, and T2w/FLAIR if available. Use absolute paths for the T2 configuration. Supply the reviewed mask and T1 transform chain before running downstream commands. Copy a [configuration template](configs/examples/) and keep actual inputs and outputs outside the checkout.
 
-## 命令与处理顺序
-
-```powershell
-neo-mri --help
+```sh
 neo-mri-extract policy
-neo-mri-extract plan --config extraction.local.json
-neo-mri-mask --help
-neo-mri t1-plan --config T1.local.json
-neo-mri-t2-v1 policy
-neo-mri-t2-v1 plan --config T2.local.json
+neo-mri-extract plan --config /analysis/extraction.local.json
+neo-mri t1-plan --config /analysis/T1.local.json
+neo-mri-t2-v1 plan --config /analysis/T2.local.json
 ```
 
-plan不运行影像计算。run需要明确的execution_enabled、有效输入与本地运行环境；Linux容器需要自己预先启动并完成资源准入，代码不启动/修复WSL或Docker。
+## Jupyter, tutorials and validation
 
-1. 准备明确身份的三维NIfTI/BIDS和N4全头T1。本版接入已准备的N4图；不提供从任意医院DICOM到完整T1输出的一键通用转换/N4入口。
-2. 用HD-BET等生成候选，在原生红线页逐层审核；记录明确批准，必要时ITK-SNAP手修并重新审核。
-3. 导出与原始BIDS T1身份绑定的审核解剖输入，再计划anat-only fMRIPrep。例子：configs/examples/t1_case.example.json与t1_runtime.example.json；所有路径相对配置文件所在目录。
-4. 运行结束检查实际mask采用及变换输入链。通用容器启动器仍是发布候选，未在这一轮重跑真实容器验收；不能把既往专用控制器的九分支结果写成该新入口的整体验收。后端未重复导出原生mask时，需要在固定容器内采集anatomy_runtime_evidence并在T1配置提供runtime_evidence，不能复制输入冒充输出。
-5. 检查MNI闪烁/逐层切片、往返一致性及非病灶/形变；批准后才给T2配置使用。跨模态T2配准用已审T1作为个体中心，不重新拟合标准化。
+Use the CLI and HTML review for this branch. [T1 review](docs/T1_MASK_REVIEW.md) and [T2 stable workflow](docs/T2_STABLE_V1.md).
 
-## 验证与边界
+The general fMRIPrep launcher is a release candidate. The historical release documentation records the scope of image-based qualification. HCP supplies healthy anatomy, diffusion and motor-task examples. OpenNeuro supplies BIDS task and ARC stroke examples. See the linked public data guide for the import steps.
 
-本地证据：T1三人九分支mask/标准化对照；T2两例卒中原始/N4与两种脑域对照；另外一例健康FLAIR仅为技术演示。人工批准绑定当时的文件，不传给新个体。脑域Dice、病灶往返Dice都不是临床定位准确率。
+## Acknowledgments
 
-见[发布与验收范围](docs/RELEASE_SCOPE.md)、[T1使用说明](docs/T1_MASK_REVIEW.md)、[T2稳定版本](docs/T2_STABLE_V1.md)。Jupyter分步交互封装后续再做。
+- Isensee, F., Schell, M., Pflueger, I., Brugnara, G., Bonekamp, D., Neuberger, U., Wick, A., Schlemmer, H.-P., Heiland, S., Wick, W., Bendszus, M., Maier-Hein, K. H., & Kickingereder, P. (2019). Automated brain extraction of multisequence MRI using artificial neural networks. *Human Brain Mapping, 40*(17), 4952–4964. [DOI](https://doi.org/10.1002/hbm.24750) · [HD-BET source](https://github.com/MIC-DKFZ/HD-BET)
+- Avants, B. B., Tustison, N. J., Song, G., Cook, P. A., Klein, A., & Gee, J. C. (2011). A reproducible evaluation of ANTs similarity metric performance in brain image registration. *NeuroImage, 54*(3), 2033–2044. [DOI](https://doi.org/10.1016/j.neuroimage.2010.09.025) · [ANTs source](https://github.com/ANTsX/ANTs)
+
+See the complete APA references, data and upstream repository credits in [Acknowledgments](https://github.com/Du-YouLang/NEO_MRI/blob/main/docs/ACKNOWLEDGMENTS.md). [NOTICE](NOTICE.md)
