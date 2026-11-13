@@ -1,6 +1,6 @@
 # NEO_MRI
 
-[English](README.md) · [公开数据接入](docs/PUBLIC_DATA.md) · [代码审查](docs/REPOSITORY_AUDIT.md)
+[English](README.md) · [公开数据接入](docs/PUBLIC_DATA.md) · [空间输入审核](docs/SPATIAL_INPUT_REVIEW.md) · [代码审查](docs/REPOSITORY_AUDIT.md)
 
 NEO_MRI 用于卒中研究，帮助团队检查结构损伤、任务诱发活动与运动通路。各分析入口分开，输入、变换、审核结论和结果按受试者与访视留存，方便同事复核。
 
@@ -31,10 +31,12 @@ flowchart TD
     V --> R["比较已保存 β，生成 HTML"]
     I --> D["run_tractography.py：拟合校正后 DWI 或读入父流线"]
     Q -. "审核后的空间与变换" .-> D
-    D --> F["按通路筛选、回放和生成 HTML"]
-    L --> O["run_lesionload.py：传播病灶并计算图谱重叠"]
-    Q -. "审核后的空间变换" .-> O
-    D -. "可选的个体 FA 及已审核变换链" .-> O
+    D --> C["audit-label 与人工审核：核对图谱变换和解剖地标"]
+    C --> F["map-label、按通路筛选和生成 HTML"]
+    L --> G["绑定原生 T2 病灶、访视、变换和审核结论"]
+    Q -. "审核后的空间变换" .-> G
+    D -. "可选个体 FA，单独审核" .-> G
+    G --> O["run_lesionload.py：传播病灶并计算图谱重叠"]
 ```
 
 ## 仓库目录
@@ -56,7 +58,7 @@ tests/              合成测试和安装包检查
 1. 用 Python 3.12 建立虚拟环境并激活。按[安装命令](README.md#install-and-prepare-a-case)安装锁定依赖、结构工具、SimpleITK 和 Jupyter。wheel 提供结构与病灶命令，BOLD、追踪与病灶负荷脚本从仓库检出目录使用。
 2. 在仓库外准备 NIfTI/BIDS 和配套元数据。医院 DICOM 转换在外部完成。按同一受试者和访视整理结构像、BOLD、事件及 DWI 梯度，确认实际方向、体素和采样时钟。HD-BET、ANTs、SynthStrip、fMRIPrep、MRtrix3 和相应资产按所用路线单独准备。
 3. 从 [`configs/examples/`](configs/examples/)复制配置，填写身份、路径和输出位置。独立 T2 和 T2 病灶命令建议使用绝对路径。结构像先跑 `plan`，任务 BOLD 先跑 `inventory`，扩散先看 `fit-plan` 或复用经过审核的父流线。按各指南完成阶段审核。
-4. 打开自动生成的报告，核对真实影像与掩膜、变换方向、功能时序或追踪边界。质控回执、配置和结果留在个体访视目录。
+4. 打开自动生成的报告，核对真实影像与掩膜、变换方向、功能时序或追踪边界。Gen6 图谱按 DWI → 个体 T1 → MNI2009c → Gen6 回查物理坐标，标签只重采样一次。新做真实 CST 映射、流线筛选或病灶负荷时，按[空间输入审核指南](docs/SPATIAL_INPUT_REVIEW.md)绑定访视、实际输入和审核结论。启用 FA 时还需单独核对来源。质控回执、配置和结果留在个体访视目录。
 
 ## Jupyter 与操作教程
 
@@ -74,13 +76,13 @@ tests/              合成测试和安装包检查
 
 [`main` 的分支索引](README.md#branches-and-validation)列出结构、病灶、任务 fMRI、追踪和病灶负荷五个历史模块分支。新改动从 `main` 开分支，按 [协作约定](CONTRIBUTING.md)审核差异后提 PR。
 
-[代码审查](docs/REPOSITORY_AUDIT.md)记录了已通过的合成覆盖、待完成的真实数据验证及空间风险。BOLD 入口登记已经完成的 fMRIPrep 结果，MRtrix3 原生启动入口仍需真实环境验收。当前仅用于研究。[来源及许可状态](NOTICE.md)记录本仓库权属与许可进展。
+[代码审查](docs/REPOSITORY_AUDIT.md)记录了合成验证、已有数据重放和待完成的真实环境验收。BOLD 入口登记已经完成的 fMRIPrep 结果，MRtrix3 原生启动入口仍需真实环境验收。当前仅用于研究。[来源及许可状态](NOTICE.md)记录本仓库权属与许可进展。
 
 实际跑 T1 时要核对 fMRIPrep 用了哪一份脑掩膜，并查看 T1–MNI 的解剖对应。通用容器启动器已有合成规划与安装验证。细节见 [T1 审核验证](docs/T1_REVIEW_VALIDATION.md)和[结构发布范围](docs/RELEASE_SCOPE.md)。
 
 ## 致谢
 
-感谢 NEO 团队、研究参与者，以及维护外部工具、数据库、模型和图谱的研究者。[APA 文献与上游代码仓库](docs/ACKNOWLEDGMENTS.md)按流程列出了引用和来源。
+感谢外部工具和数据背后的研究参与者、研究者及软件团队。[APA 文献与上游代码仓库](docs/ACKNOWLEDGMENTS.md)按流程列出了引用和来源。
 
 - Isensee, F., Schell, M., Pflueger, I., Brugnara, G., Bonekamp, D., Neuberger, U., Wick, A., Schlemmer, H.-P., Heiland, S., Wick, W., Bendszus, M., Maier-Hein, K. H., & Kickingereder, P. (2019). Automated brain extraction of multisequence MRI using artificial neural networks. *Human Brain Mapping, 40*(17), 4952–4964. [DOI](https://doi.org/10.1002/hbm.24750) · [HD-BET source](https://github.com/MIC-DKFZ/HD-BET)
 - Esteban, O., Markiewicz, C. J., Blair, R. W., Moodie, C. A., Isik, A. I., Erramuzpe, A., Kent, J. D., Goncalves, M., DuPre, E., Snyder, M., Oya, H., Ghosh, S. S., Wright, J., Durnez, J., Poldrack, R. A., & Gorgolewski, K. J. (2019). fMRIPrep: A robust preprocessing pipeline for functional MRI. *Nature Methods, 16*(1), 111–116. [DOI](https://doi.org/10.1038/s41592-018-0235-4) · [fMRIPrep source](https://github.com/nipreps/fmriprep)

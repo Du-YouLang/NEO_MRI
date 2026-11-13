@@ -1,6 +1,6 @@
 # NEO_MRI
 
-[简体中文](README_CN.md) · [Public data guide](docs/PUBLIC_DATA.md) · [Code audit](docs/REPOSITORY_AUDIT.md)
+[简体中文](README_CN.md) · [Public data guide](docs/PUBLIC_DATA.md) · [Spatial input review](docs/SPATIAL_INPUT_REVIEW.md) · [Code audit](docs/REPOSITORY_AUDIT.md)
 
 NEO_MRI is a research toolkit for studying structural injury, task-evoked activity and motor pathways after stroke. It gives each analysis its own entry point and saves the inputs, spatial transforms, decisions and results needed for review.
 
@@ -31,10 +31,12 @@ flowchart TD
     V --> R["Compare saved beta maps and build HTML"]
     I --> D["run_tractography.py: corrected DWI fit or load saved parent tracks"]
     Q -. "Reviewed space and transform chain" .-> D
-    D --> F["Screen by pathway gates and build HTML"]
-    L --> O["run_lesionload.py: map the lesion and calculate atlas overlap"]
-    Q -. "Reviewed transforms" .-> O
-    D -. "Optional subject-space FA with a reviewed chain" .-> O
+    D --> C["audit-label and review: verify the atlas chain and landmarks"]
+    C --> F["map-label, screen by pathway gates and build HTML"]
+    L --> G["Bind the native T2 lesion, visit, transforms and approval"]
+    Q -. "Reviewed transforms" .-> G
+    D -. "Optional FA with its own review" .-> G
+    G --> O["run_lesionload.py: map the lesion and calculate atlas overlap"]
 ```
 
 ## Repository layout
@@ -72,7 +74,7 @@ The wheel installs structural and lesion commands. Use the repository checkout f
 1. **Prepare local inputs.** Convert scanner exports outside this repository. Keep original files, acquisition JSON, task events and diffusion gradients together by subject and session. Check the NIfTI affine, voxel size, orientation and phase-encoding metadata before staging the inputs.
 2. **Copy a configuration.** Start from [`configs/examples/`](configs/examples/). Fill in paths, input identity and output directory. Use absolute paths for the standalone T2 and T2 lesion commands. Keep local configs and reports outside the checkout.
 3. **Run the first check.** For T1 use `neo-mri-extract plan --config <extraction.json>`, then review the candidate before `neo-mri t1-plan --config <T1.json>`. For T2 use `neo-mri-t2-v1 plan --config <T2.json>` with the reviewed T1 chain. For BOLD start at `inventory`. For diffusion start at `fit-plan` or replay a reviewed parent tractogram.
-4. **Review before reuse.** Check slices and overlays, the actual transform direction and grid, design timing, and downstream reports as applicable. A passing synthetic test or a high round-trip Dice measures a limited property. Anatomical and scientific decisions require case review.
+4. **Review before reuse.** Check slices and overlays, the actual transform direction and grid, design timing, and downstream reports as applicable. For Gen6 atlas mapping, the physical point lookup follows DWI → individual T1 → MNI2009c → Gen6, followed by one label interpolation. For new real-data CST mapping, streamline screening or lesion-load runs, use the [spatial input review guide](docs/SPATIAL_INPUT_REVIEW.md) to bind the visit and actual inputs to the approval. Optional FA requires its own evidence.
 
 ## Jupyter and tutorials
 
@@ -98,13 +100,13 @@ Launch notebooks from the repository root with the environment above. They invok
 | [`tractography`](https://github.com/Du-YouLang/NEO_MRI/tree/tractography) | CST/CRP tracking and replay |
 | [`lesionload_SMATT_Boyne2025`](https://github.com/Du-YouLang/NEO_MRI/tree/lesionload_SMATT_Boyne2025) | SMATT, HCPA and Boyne lesion load |
 
-The [audit](docs/REPOSITORY_AUDIT.md) records the synthetic coverage, real-data qualification gaps and open spatial risks. The public BOLD command registers existing fMRIPrep derivatives and does not start fMRIPrep. The native MRtrix3 launcher still needs qualification in a real MRtrix3 environment. Research use only. See [NOTICE](NOTICE.md) for the team's code provenance and pending licensing decision.
+The [audit](docs/REPOSITORY_AUDIT.md) records synthetic coverage, archived-input replay and remaining qualification gaps. The public BOLD command registers existing fMRIPrep derivatives and does not start fMRIPrep. The native MRtrix3 launcher still needs qualification in a real MRtrix3 environment. Research use only. See [NOTICE](NOTICE.md) for the team's code provenance and pending licensing decision.
 
 For actual anatomy runs, record which mask fMRIPrep used and inspect the T1–MNI anatomy before reusing the transforms. The portable T1 container launcher has synthetic planning and installation coverage. See [T1 validation](docs/T1_REVIEW_VALIDATION.md) and the [structural release scope](docs/RELEASE_SCOPE.md).
 
 ## Acknowledgments
 
-We thank the NEO collaborators who developed the workflows and the participants, investigators and software teams behind the external tools and data. The [APA references and upstream repository credits](docs/ACKNOWLEDGMENTS.md) cover anatomy, lesion segmentation, task fMRI, diffusion, atlas assets and public examples.
+We thank all the participants, investigators and software teams behind the external tools and data. The [APA references and upstream repository credits](docs/ACKNOWLEDGMENTS.md) cover anatomy, lesion segmentation, task fMRI, diffusion, atlas assets and public examples.
 
 - Isensee, F., Schell, M., Pflueger, I., Brugnara, G., Bonekamp, D., Neuberger, U., Wick, A., Schlemmer, H.-P., Heiland, S., Wick, W., Bendszus, M., Maier-Hein, K. H., & Kickingereder, P. (2019). Automated brain extraction of multisequence MRI using artificial neural networks. *Human Brain Mapping, 40*(17), 4952–4964. [DOI](https://doi.org/10.1002/hbm.24750) · [HD-BET source](https://github.com/MIC-DKFZ/HD-BET)
 - Esteban, O., Markiewicz, C. J., Blair, R. W., Moodie, C. A., Isik, A. I., Erramuzpe, A., Kent, J. D., Goncalves, M., DuPre, E., Snyder, M., Oya, H., Ghosh, S. S., Wright, J., Durnez, J., Poldrack, R. A., & Gorgolewski, K. J. (2019). fMRIPrep: A robust preprocessing pipeline for functional MRI. *Nature Methods, 16*(1), 111–116. [DOI](https://doi.org/10.1038/s41592-018-0235-4) · [fMRIPrep source](https://github.com/nipreps/fmriprep)
