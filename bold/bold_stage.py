@@ -315,6 +315,13 @@ def compatible_masks(paths):
     return images[0],mask
 
 
+def load_stat_map(path, reference):
+    image = nib.load(path)
+    if len(image.shape) != 3 or not same_grid(image, reference):
+        raise StageError(f"Saved statistical map has a different physical grid: {path}")
+    return image
+
+
 def fixed_effect(config, group, runs, dest):
     members = [runs[member] for member in group["runs"]]
     if any(row["status"]!="FITTED" for row in members):
@@ -334,8 +341,8 @@ def fixed_effect(config, group, runs, dest):
     kernels = {}
     for kernel in config["analysis"]["kernels_mm"]:
         name = f"fwhm_{kernel}mm"
-        variances = np.stack([nib.load(f/name/"variance.nii.gz").get_fdata()[mask] for f in folders])
-        effects = np.stack([nib.load(f/name/"effect.nii.gz").get_fdata()[mask] for f in folders])
+        variances = np.stack([load_stat_map(f/name/"variance.nii.gz", image).get_fdata()[mask] for f in folders])
+        effects = np.stack([load_stat_map(f/name/"effect.nii.gz", image).get_fdata()[mask] for f in folders])
         dofs = np.asarray([s["kernels"][str(kernel)]["residual_dof"] for s in contexts],dtype=float)
         if (variances<=0).any() or not np.isfinite(variances).all():
             raise StageError("Invalid saved variance in fixed-effects domain")
@@ -454,14 +461,15 @@ def compare(config, full=False):
             paths = [[side/f"fwhm_{kernel}mm"/f"{beta}.nii.gz" for side in sides] for kernel in kernels]
             if any(not p.is_file() for pair_paths in paths for p in pair_paths):
                 raise StageError(f"Both sides need saved {model} beta maps for all kernels")
+            beta_images = [[load_stat_map(path, image) for path in pair_paths] for pair_paths in paths]
             folder = dest/pair["id"]
             folder.mkdir()
             map_file(folder,"mask",1,mask,image,np.uint8)
             row.update(model=model,voxels=int(mask.sum()),kernels={},reference_space=contexts[0]["reference_space"])
-            for kernel,pair_paths in zip(kernels,paths):
+            for kernel,pair_images in zip(kernels,beta_images,strict=True):
                 where = folder/f"fwhm_{kernel}mm"
                 where.mkdir()
-                left,right = [nib.load(p).get_fdata()[mask] for p in pair_paths]
+                left,right = [beta_image.get_fdata()[mask] for beta_image in pair_images]
                 delta = left-right
                 for name,values in (("left",left),("right",right),("left_minus_right",delta)):
                     map_file(where,name,values,mask,image)
