@@ -1,0 +1,281 @@
+{
+  "atlas_files": [
+    {
+      "file": "SMATT.zip",
+      "bytes": 1481239,
+      "sha256": "b0f0e8805547b23877210c5c49fe61e912bf2c0939f2dca7d3835a50e5e14d0a",
+      "url": "https://lrnlab.org/wp-content/uploads/2025/10/SMATT.zip",
+      "role": "Official SMATT archive; 12 binary members pinned in smatt_reference_v1.json"
+    },
+    {
+      "file": "HCPA_CST_Left_MNI.nii",
+      "bytes": 34120436,
+      "sha256": "bdcfa264a5605fdc8b310ff84b4f4b4860ad1586651b49e345040981b48092d6",
+      "url": "https://github.com/willi3by/pyLesionLoad/blob/a4563f88bf310f4b2fb139d507061030de2328c5/data/HCPA/HCPA_CST_Left_MNI.nii",
+      "role": "HCPA 2009c binary CST"
+    },
+    {
+      "file": "HCPA_CST_Right_MNI.nii",
+      "bytes": 34120436,
+      "sha256": "e9de281f695c809353a5bc34f345d4af7a318d9445df04bc91677bf6c60f4ac5",
+      "url": "https://github.com/willi3by/pyLesionLoad/blob/a4563f88bf310f4b2fb139d507061030de2328c5/data/HCPA/HCPA_CST_Right_MNI.nii",
+      "role": "HCPA 2009c binary CST"
+    },
+    {
+      "file": "tpl-MNI152NLin2009cAsym_from-MNI152NLin6Asym_mode-image_xfm.h5",
+      "bytes": 204735104,
+      "sha256": "2e3869a07b96aec406e0419ca2e434afc54882d37cc212b933b139d1b63a4dfe",
+      "url": "https://templateflow.s3.amazonaws.com/tpl-MNI152NLin2009cAsym/tpl-MNI152NLin2009cAsym_from-MNI152NLin6Asym_mode-image_xfm.h5",
+      "role": "Accepted template bridge asset; numerical inverse for Gen6 output to 2009c input"
+    },
+    {
+      "file": "tpl-MNI152NLin6Asym_from-MNI152NLin2009cAsym_mode-image_xfm.h5",
+      "bytes": 204735104,
+      "sha256": "2a19853bc99ebd1d711d230ea4a4dc4db3b9a60f8b50b9181f93b44036dfbd0f",
+      "url": "https://templateflow.s3.amazonaws.com/tpl-MNI152NLin6Asym/tpl-MNI152NLin6Asym_from-MNI152NLin2009cAsym_mode-image_xfm.h5",
+      "role": "Reproduction of rejected paired transform check only"
+    },
+    {
+      "file": "tpl-MNI152NLin6Asym_res-01_desc-brain_T1w.nii.gz",
+      "bytes": 3293998,
+      "sha256": "72f8edc99d7e696da7717db20b73897d8da5909d7f30b1c9a7e2a79e9f64ff2f",
+      "url": "https://templateflow.s3.amazonaws.com/tpl-MNI152NLin6Asym/tpl-MNI152NLin6Asym_res-01_desc-brain_T1w.nii.gz",
+      "role": "Gen6 viewer background"
+    },
+    {
+      "file": "MNI_dsnFSL_IDall_CRST_L_manual.prune2.trk.gz",
+      "bytes": 182633319,
+      "sha256": "ca69bd25db02ed79f452931e7e007ca9b041eeae2c0909eae40f1e0fbc014bd7",
+      "url": "https://osf.io/download/z5e9q/",
+      "role": "Boyne Method C pruned CRST IDall tractogram",
+      "osf_file_version": 1
+    },
+    {
+      "file": "MNI_dsnFSL_IDall_CRST_R_manual.prune2.trk.gz",
+      "bytes": 173043400,
+      "sha256": "a3ebcff38ab1d1ad8e813d5c7aa7bcfc8011dd98cd7a5a05186cfaa7cb87dad1",
+      "url": "https://osf.io/download/6873078355bc1fa5139169a2/",
+      "role": "Boyne Method C pruned CRST IDall tractogram",
+      "osf_file_version": 1
+    },
+    {
+      "file": "ACC_L.inDil2.nii.gz",
+      "bytes": 34286,
+      "sha256": "b5f6717a1efc6d1ef116264817641fc2a0b603a31ab335519cf2e96982e6f346",
+      "url": "https://osf.io/q3gw7/files/osfstorage/68730898ef532ee626916a13",
+      "role": "Author cortical ROI"
+    },
+    {
+      "file": "ACC_R.inDil2.nii.gz",
+      "bytes": 34472,
+      "sha256": "5c628ea07a217c3745932286d8394e048fad4f907a9ffe3a122a446a754bedc6",
+      "url": "https://osf.io/q3gw7/files/osfstorage/6873089b65522d7e916c018e",
+      "role": "Author cortical ROI"
+    },
+    {
+      "file": "aPFC_L.inDil2.nii.gz",
+      "bytes": 41189,
+      "sha256": "bf611c3ddb366c3c0496a86cd75bf6324bc0487240017c3d4b7c1e880090f2e0",
+      "url": "https://osf.io/q3gw7/files/osfstorage/6873089b665dd639f49169b1",
+      "role": "Author cortical ROI"
+    },
+    {
+      "file": "aPFC_R.inDil2.nii.gz",
+      "bytes": 40487,
+      "sha256": "be0b6f12a8f92a883d06886f99d56d2cb40f4b3935d93c2d77ea5322f1a59a18",
+      "url": "https://osf.io/q3gw7/files/osfstorage/6873089e7400b910dc328270",
+      "role": "Author cortical ROI"
+    },
+    {
+      "file": "FEFarea_L.inDil2.nii.gz",
+      "bytes": 31764,
+      "sha256": "14f406bfc773682eba13b5079c61121b4087254ae231822a19364338ab5b313a",
+      "url": "https://osf.io/q3gw7/files/osfstorage/6873089e30004fb8823282f1",
+      "role": "Author cortical ROI"
+    },
+    {
+      "file": "FEFarea_R.inDil2.nii.gz",
+      "bytes": 31614,
+      "sha256": "4481d46c4bcceaf3ac8a3874e191a5a80b2e8df92a830d2c5c77d8b1eb549735",
+      "url": "https://osf.io/q3gw7/files/osfstorage/687308a1cbb38587ab70a655",
+      "role": "Author cortical ROI"
+    },
+    {
+      "file": "M1_L.inDil2.nii.gz",
+      "bytes": 34220,
+      "sha256": "cc7726eebc5a5f1c419f0b7858d1f76f4124c3920730214a1d123e5c2b114f0d",
+      "url": "https://osf.io/q3gw7/files/osfstorage/687308a2939a396d586c000b",
+      "role": "Author cortical ROI"
+    },
+    {
+      "file": "M1_R.inDil2.nii.gz",
+      "bytes": 33919,
+      "sha256": "43223318a2362ac8bad9a3da208c0598f53299742561b7765954bf485cc79c7c",
+      "url": "https://osf.io/q3gw7/files/osfstorage/687308a37400b910dc328275",
+      "role": "Author cortical ROI"
+    },
+    {
+      "file": "mPFC_L.inDil2.nii.gz",
+      "bytes": 40241,
+      "sha256": "b35edd3084549720dab72aa07cc3a2261d6c3dc5f902dd2714ebcbdca934e31d",
+      "url": "https://osf.io/q3gw7/files/osfstorage/687308a48a95a153de328265",
+      "role": "Author cortical ROI"
+    },
+    {
+      "file": "mPFC_R.inDil2.nii.gz",
+      "bytes": 40105,
+      "sha256": "d487880c9500b33dc76913af041de4559a4f8f0573372ca2966a41a7f8e05f65",
+      "url": "https://osf.io/q3gw7/files/osfstorage/687308a52603ebd57470a37e",
+      "role": "Author cortical ROI"
+    },
+    {
+      "file": "Other_L.inDil2.nii.gz",
+      "bytes": 33784,
+      "sha256": "1fe2c6494079229142b514db5892aa1e5e9184b481d0d9573b939b16013bbd1a",
+      "url": "https://osf.io/q3gw7/files/osfstorage/687308a7a547e8fb382f94a0",
+      "role": "Author cortical ROI"
+    },
+    {
+      "file": "Other_R.inDil2.nii.gz",
+      "bytes": 33726,
+      "sha256": "b859906df4a871b262674084a2d29d2746e5018e90d22e431745d94d40cbc5bd",
+      "url": "https://osf.io/q3gw7/files/osfstorage/687308a755bc1fa5139169d0",
+      "role": "Author cortical ROI"
+    },
+    {
+      "file": "PMd_R.inDil2.nii.gz",
+      "bytes": 35078,
+      "sha256": "0e10c21b59f53e4b090f2839e15ea62bad151d2e89312e440ddcb9f537576225",
+      "url": "https://osf.io/q3gw7/files/osfstorage/687308a92603ebd57470a380",
+      "role": "Author cortical ROI"
+    },
+    {
+      "file": "PMd_L.inDil2.nii.gz",
+      "bytes": 34958,
+      "sha256": "47efcc93cdb5bf46998eb7eb813e96c929f155868896cf8a3ca15ad938de9e51",
+      "url": "https://osf.io/q3gw7/files/osfstorage/687308aa2f2eb14f4970a4fe",
+      "role": "Author cortical ROI"
+    },
+    {
+      "file": "preSMA_L.inDil2.nii.gz",
+      "bytes": 32143,
+      "sha256": "98a4e2a8f1fd16b14b2920b4f6f12b340d78649e36accdcc3b95774cb7111d76",
+      "url": "https://osf.io/q3gw7/files/osfstorage/687308ac2603ebd57470a382",
+      "role": "Author cortical ROI"
+    },
+    {
+      "file": "preSMA_R.inDil2.nii.gz",
+      "bytes": 32038,
+      "sha256": "086e83c3bcc7e368468849dac4d5bd3025b9b930a716fcb0cec0a36f7f83b75c",
+      "url": "https://osf.io/q3gw7/files/osfstorage/687308ada547e8fb382f94a2",
+      "role": "Author cortical ROI"
+    },
+    {
+      "file": "SMA_L.inDil2.nii.gz",
+      "bytes": 32407,
+      "sha256": "c3c15e70b964c05313a0e1b6bf7cb52775ae0acb7f8b6f8082680fa9d47d6e68",
+      "url": "https://osf.io/q3gw7/files/osfstorage/687308af8a95a153de328267",
+      "role": "Author cortical ROI"
+    },
+    {
+      "file": "SMA_R.inDil2.nii.gz",
+      "bytes": 32340,
+      "sha256": "3d5c4d1b7a756219bf2f1065a6d7c644dd7a9f39e4181e07801767728b5218ca",
+      "url": "https://osf.io/q3gw7/files/osfstorage/687308b0a7579a3c7570a5e3",
+      "role": "Author cortical ROI"
+    },
+    {
+      "file": "AnalysisCode_2025-07-12.sh",
+      "bytes": 147896,
+      "sha256": "44bebc5b8e9f3a24ea5bffa20abb8fb178a86fec163dc5cd52583c2184fba532",
+      "url": "https://osf.io/download/8qde4/",
+      "role": "Author Method C ROI/ROA script",
+      "osf_file_version": 2
+    },
+    {
+      "file": "atlas_provenance.json",
+      "bytes": 18524,
+      "sha256": "b3c29cbb704192086886076799cd8883e634371225ee3cc75e09c3f45c7c6850",
+      "url": null,
+      "role": "Locally derived from pinned Boyne Method C assets"
+    },
+    {
+      "file": "CRST_L_subject_count_1mm.nii.gz",
+      "bytes": 674819,
+      "sha256": "fe2ca248ada5e0f63f3bb94133f11fd3518c9ca727e846ec72896f16ac9d34ef",
+      "url": null,
+      "role": "Locally derived from pinned Boyne Method C assets"
+    },
+    {
+      "file": "CRST_R_subject_count_1mm.nii.gz",
+      "bytes": 670096,
+      "sha256": "4f4d02d9192e9d573569dbbeda8c78c5f3777b49100b14c3a05f9c3055247b55",
+      "url": null,
+      "role": "Locally derived from pinned Boyne Method C assets"
+    }
+  ],
+  "boyne_source": "https://doi.org/10.17605/OSF.IO/Q3GW7",
+  "dlPFC": "Deferred; requires original bilateral Method C volumetric masks or confirmed Gen6 surface workflow.",
+  "smatt_binary_members": {
+    "Left_M1.nii.gz": {
+      "member": "SMATT_website/Left-M1-S-MATT.nii",
+      "member_sha256": "a67165505e024bd7ac49f2649424e277b1f4ce1116bf93367f3ba1d62456e0e5",
+      "voxel_count": 8644
+    },
+    "Left_PMd.nii.gz": {
+      "member": "SMATT_website/Left-PMd-S-MATT.nii",
+      "member_sha256": "9749563b46152f85b51691da52c4cd81be9461ef7381559d9aef8593332bb1a3",
+      "voxel_count": 4230
+    },
+    "Left_PMv.nii.gz": {
+      "member": "SMATT_website/Left-PMv-S-MATT.nii",
+      "member_sha256": "f7e1c3dfb07638caef75ef5733f829a5048be45ed8b14913f027e5f37e5ceb47",
+      "voxel_count": 3781
+    },
+    "Left_S1.nii.gz": {
+      "member": "SMATT_website/Left-S1-S-MATT.nii",
+      "member_sha256": "a53810f13f7474d25da496d9332155929a8b7be120dec0ffd1e2615d194ee8e7",
+      "voxel_count": 5720
+    },
+    "Left_SMA.nii.gz": {
+      "member": "SMATT_website/Left-SMA-S-MATT.nii",
+      "member_sha256": "d2e798d7e041c2257112693172c420e0acc34474f2ce1d5186a6d82a65aa72fb",
+      "voxel_count": 5061
+    },
+    "Left_preSMA.nii.gz": {
+      "member": "SMATT_website/Left-preSMA-S-MATT.nii",
+      "member_sha256": "399c26e4cd1713c171b97ef94d3b0a3c33fa1ca2df0fdbe5f1684f66a0d94b1b",
+      "voxel_count": 3643
+    },
+    "Right_M1.nii.gz": {
+      "member": "SMATT_website/Right-M1-S-MATT.nii",
+      "member_sha256": "e452178dca5757f8c9858f9cdba9cc93aec6f6a09125563293e8eac8f58aeb89",
+      "voxel_count": 8644
+    },
+    "Right_PMd.nii.gz": {
+      "member": "SMATT_website/Right-PMd-S-MATT.nii",
+      "member_sha256": "daff57647526dcdb1afa87f2f0fa8f6e8a35895dd0f8b13e378762dcee4e123a",
+      "voxel_count": 4230
+    },
+    "Right_PMv.nii.gz": {
+      "member": "SMATT_website/Right-PMv-S-MATT.nii",
+      "member_sha256": "82fe5971136e4ec735da9a12573fbb70ce133dd0342d1e0815b9ec5c34439035",
+      "voxel_count": 3781
+    },
+    "Right_S1.nii.gz": {
+      "member": "SMATT_website/Right-S1-S-MATT.nii",
+      "member_sha256": "38dca453b4012d0225e53f630f235a78eba3411073c8808ee69b90131e15a938",
+      "voxel_count": 5720
+    },
+    "Right_SMA.nii.gz": {
+      "member": "SMATT_website/Right-SMA-S-MATT.nii",
+      "member_sha256": "5773753f24c0cfd6bd6230f64f1e4acf4a24be4107da742be83f81ddffeb2141",
+      "voxel_count": 5061
+    },
+    "Right_preSMA.nii.gz": {
+      "member": "SMATT_website/Right-preSMA-S-MATT.nii",
+      "member_sha256": "20d94e4b835a28c0cd6051dd021ef8c531b6c8693bbab3e5c6066b48831052c4",
+      "voxel_count": 3643
+    }
+  }
+}
