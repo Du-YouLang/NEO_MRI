@@ -12,6 +12,7 @@ from lesionload import boyne
 from lesionload.demo import demo
 from lesionload.metrics import measure
 from lesionload.workflow import run
+from spatial_contract import digest
 
 
 def test_demo_count_contract_and_output(tmp_path):
@@ -64,9 +65,55 @@ def test_config_rejects_wrong_lesion_hash_before_creating_output(tmp_path):
     config["t2"]["lesion"]["sha256"] = "0" * 64
     config_path.write_text(json.dumps(config), encoding="utf-8")
     output = tmp_path / "invalid"
-    with pytest.raises(ValueError, match="hash mismatch"):
+    with pytest.raises(ValueError, match="SHA-256 mismatch"):
         run(config_path, output)
     assert not output.exists()
+
+
+@pytest.mark.parametrize("change,message", [
+    ("visit", "different visit"), ("decision", "no supported approval"),
+    ("direction", "point directions"), ("lesion", "actual lesion"),
+    ("transform", "actual t1_to_t2_pull"), ("fa", "actual fa"),
+])
+def test_spatial_review_rejects_mismatched_approved_inputs(tmp_path, change, message):
+    info = demo(tmp_path / "demo")
+    config_path = Path(info["config"])
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    key = "fa_spatial_review" if change == "fa" else "spatial_review"
+    review_path = Path(config[key]["path"])
+    review = json.loads(review_path.read_text(encoding="utf-8"))
+    if change == "visit":
+        review["visit"]["session"] = "02"
+    elif change == "decision":
+        review["decision"] = "PENDING"
+    elif change == "direction":
+        review["point_directions"]["mni_to_t1_pull"][1:] = ["T1w", "MNI152NLin2009cAsym"]
+    elif change == "transform":
+        review["input_sha256"]["t1_to_t2_pull"] = "0" * 64
+    else:
+        review["input_sha256"][change] = "0" * 64
+    review_path.write_text(json.dumps(review), encoding="utf-8")
+    config[key]["sha256"] = digest(review_path)
+    config_path.write_text(json.dumps(config), encoding="utf-8")
+    output = tmp_path / "invalid"
+    with pytest.raises(ValueError, match=message):
+        run(config_path, output)
+    assert not output.exists()
+
+
+def test_spatial_review_follows_same_bytes_after_relocation(tmp_path):
+    info = demo(tmp_path / "demo")
+    config_path = Path(info["config"])
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    old = Path(config["t2"]["lesion"]["path"])
+    moved = tmp_path / "relocated_lesion.nii.gz"
+    old.rename(moved)
+    config["t2"]["lesion"]["path"] = str(moved)
+    config_path.write_text(json.dumps(config), encoding="utf-8")
+    output = tmp_path / "new"
+    receipt = run(config_path, output)
+    assert receipt["t2"]["input_review"]["decision"] == "APPROVED"
+    assert receipt["t2"]["input_review"]["input_sha256"]["lesion"] == digest(moved)
 
 
 def test_boyne_crosses_cells_between_vertices_and_deduplicates_visits(monkeypatch):

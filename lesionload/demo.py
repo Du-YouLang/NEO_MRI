@@ -4,7 +4,9 @@ import numpy as np
 import nibabel as nib
 
 from anatomy_review import file_record, save_new
+from spatial_contract import REVIEW_SCHEMA
 from structural_multimodal import sitk_module
+from .spatial import FA_DIRECTIONS, T2_DIRECTIONS
 from .workflow import SCHEMA, run
 
 
@@ -51,7 +53,8 @@ def demo(output):
                          "tracts": {f"Left_{origin}": image(f"{method}_left", left),
                                     f"Right_{origin}": image(f"{method}_right", right),
                                     "Left_Empty": empty}}
-    config = {"schema": SCHEMA, "synthetic": True, "methods": list(banks),
+    visit = {"dataset": "generated", "subject": "demo", "session": "01"}
+    config = {"schema": SCHEMA, "synthetic": True, "visit": visit, "methods": list(banks),
               "synthetic_atlases": banks, "synthetic_gen6_to_2009c_pull": file_record(transform),
               "t2": {"source": native, "lesion": original_lesion, "t1": native, "mni": brain,
                      "t1_to_t2_pull": file_record(transform), "mni_to_t1_pull": file_record(transform),
@@ -61,7 +64,20 @@ def demo(output):
                      "fit_mask": fit_mask, "reviewed_mask_in_t1": fit_mask,
                      "flirt_dwi_to_t1": file_record(matrix), "flirt_inverse": file_record(matrix),
                      "world_forward_ras": np.eye(4).tolist(), "review": file_record(review),
+                     "model_receipt": file_record(review),
                      "t1_sha256": native["sha256"], "valid_native_voxels": int(fit.sum())}}
+    for key, scope, roles, directions in (
+        ("spatial_review", "lesion_load", config["t2"], T2_DIRECTIONS),
+        ("fa_spatial_review", "lesion_load_fa", {**config["fa"], "t1": native}, FA_DIRECTIONS),
+    ):
+        path = inputs / f"{scope}_review.json"
+        save_new(path, {"schema": REVIEW_SCHEMA, "decision": "APPROVED", "visit": visit,
+                        "scope": scope, "branch": None, "point_directions": directions,
+                        "reviewer": "Synthetic fixture generator", "reviewed_utc": "2000-01-01T00:00:00Z",
+                        "basis": "Synthetic inputs with identity transforms", "evidence": {"fixture": file_record(review)},
+                        "input_sha256": {role: entry["sha256"] for role, entry in roles.items()
+                                         if isinstance(entry, dict) and "sha256" in entry}})
+        config[key] = file_record(path)
     config_path = root / "synthetic.local.json"
     save_new(config_path, config)
     run(config_path, root / "results")
