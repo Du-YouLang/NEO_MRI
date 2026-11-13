@@ -1,0 +1,7 @@
+{
+  "schema": "neo-t2-lesion-propagation-1",
+  "structural_run": "/analysis/subject/structural/T2_structural_v1",
+  "branch": "raw_independent_HDBET",
+  "lesion": "/analysis/subject/labels/original_T2w_lesion.nii.gz",
+  "output": "/analysis/subject/structural/T2_lesion_propagation_v1"
+}

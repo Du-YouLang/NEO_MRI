@@ -8,4 +8,6 @@
 
 追踪入口依据 NEO 团队审核的 CST／CRP 交接协议实现。MRtrix、HMAT、XTRACT、Tang、Navigator、Boyne 和 Jülich 相关工具或图谱由使用者按各自许可准备。仓库提供合成演示。
 
+病灶重叠入口使用外部 SMATT、HCPA 与 Boyne 2025 资产。来源和 SHA-256 见 [资产清单](lesionload/reference_assets.lock.json)。[Boyne 上游 MIT 声明](lesionload/licenses/Boyne2025_MIT.txt)随来源说明保留。
+
 参考：[fMRIPrep 用法](https://fmriprep.org/en/25.2.3/usage.html)、[Nilearn](https://nilearn.github.io/)、[setuptools 项目配置](https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html)。fMRIPrep 链接是同系列文档参考；实际镜像仍固定为 25.2.7，并必须核实本地镜像的命令和身份。

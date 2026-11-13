@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>病灶重叠审核</title>
+<style>
+:root{font-family:Inter,"Microsoft YaHei",system-ui,sans-serif;color:#172b36;background:#eef3f5;font-synthesis:none}
+*{box-sizing:border-box}body{margin:0}main{width:min(1270px,100%);margin:auto;padding:30px clamp(13px,3vw,34px) 45px}
+header{background:#102d3b;color:#f1f8fa;padding:25px 28px;border-radius:13px}
+h1{font-size:clamp(27px,4vw,40px);margin:0 0 9px;line-height:1.2}p{margin:7px 0;line-height:1.65}
+button,input,select{font:inherit}button,select{color:#163744;background:#fff;border:1px solid #a8bec6;border-radius:6px;padding:6px 11px}
+button{cursor:pointer}button:hover{background:#e5f1f3}button:focus-visible,select:focus-visible,canvas:focus-visible,input:focus-visible{outline:2px solid #157887;outline-offset:3px}
+a{color:#086674}.controls{position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:13px;flex-wrap:wrap;background:#f8fcfd;border:1px solid #cadae0;padding:12px 15px;border-radius:10px;margin:13px 0;box-shadow:0 3px 12px #102d3b0a}
+.controls label{display:flex;align-items:center;gap:6px}.slider{flex:1;min-width:180px}.slider span,.slider output{white-space:nowrap}.slider input{min-width:0;width:100%;accent-color:#107c88}.slider output{min-width:82px;text-align:right;font-variant-numeric:tabular-nums;font-weight:700;color:#075763}
+.workspace,.charts{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:13px;margin-top:13px}.workspace{grid-template-columns:minmax(0,1.42fr) minmax(0,1fr)}
+.card{min-width:0;border:1px solid #cedbe0;background:#fff;border-radius:11px;padding:13px 15px}.card h2{margin:0 0 6px;font-size:17px;line-height:1.4}
+.figure-letter{font-size:13px;font-weight:750;display:inline-grid;place-items:center;width:24px;height:24px;border-radius:5px;background:#e5f2f3;color:#005b64;margin-right:7px;vertical-align:1px}
+.canvas{display:block;width:100%;border-radius:7px}.scene,.axial{height:clamp(310px,38vw,408px);background:#0c1923}.scene{touch-action:none;cursor:grab}.scene:active{cursor:grabbing}.axial{touch-action:pan-y}
+.bar,.profile{height:230px}.profile{cursor:crosshair}.actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:8px}.actions button{padding:4px 8px;font-size:13px}
+.actions label{font-size:13px;display:flex;align-items:center;gap:3px}.actions input{accent-color:#086674}
+.muted,figcaption{color:#49616e;font-size:13px}.legend{display:flex;gap:7px 14px;flex-wrap:wrap;margin:10px 0 2px}.legend span{white-space:nowrap;font-size:13px}.swatch{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px}
+.details{margin-top:13px}summary{color:#075e69;font-weight:700;cursor:pointer}.scroll{overflow:auto}table{width:100%;border-collapse:collapse;margin-top:8px;font-variant-numeric:tabular-nums}
+th,td{padding:6px 9px;border-bottom:1px solid #dce7ea;text-align:right;white-space:nowrap}th:first-child,td:first-child{text-align:left}thead{background:#ecf4f6}
+footer{margin-top:16px;color:#49616e;font-size:13px}.error{color:#a52636;font-weight:bold}
+@media(max-width:790px){.workspace,.charts{grid-template-columns:1fr}.scene,.axial{height:350px}.controls{gap:8px}.slider{order:2;flex-basis:100%}}
+</style>
+</head>
+<body><main>
+<header><h1>__METHOD__ 病灶与 FA</h1><p>标准空间 · 1 mm 轴位</p></header>
+<div class="controls" aria-label="联动轴位控制">
+  <label>半球 <select id="side"><option value="Left">左</option><option value="Right">右</option></select></label>
+  <label class="slider"><span>轴位 z</span><input id="z" type="range" min="-72" max="109" step="1" value="23" aria-label="MNI RAS z，毫米">
+  <output id="z-value" for="z" aria-live="polite"></output></label>
+</div>
+<div class="workspace">
+  <section class="card"><h2>三维病灶与 图谱 分束轮廓</h2>
+    <canvas class="canvas scene" id="scene" tabindex="0" aria-label="三维轮廓。拖动或方向键旋转，滚轮或加减键缩放。"></canvas>
+    <div class="actions"><button type="button" data-view="oblique">斜视</button><button type="button" data-view="axial">轴位</button>
+      <button type="button" data-view="coronal">冠状</button><button type="button" data-view="sagittal">矢状</button>
+      <label><input type="checkbox" id="show-lesion" checked>病灶</label><label><input type="checkbox" id="show-atlas" checked>分束</label></div>
+    <p class="muted">拖动旋转，滚轮缩放。三维轮廓每 2 mm 显示一层，活动切面的轮廓按原始 1 mm 网格绘制。</p>
+  </section>
+  <section class="card"><h2 id="axial-title">轴位切面</h2>
+    <canvas class="canvas axial" id="axial" tabindex="0" aria-label="当前轴位。聚焦后可用上下方向键切层。"></canvas>
+    <div class="legend" id="legend"></div>
+    <p class="muted">灰度为标准空间 T1 背景。屏幕左侧对应解剖左侧。</p>
+  </section>
+</div>
+<div class="charts">
+  <section class="card"><h2><span class="figure-letter">C</span><span id="c-title">当前层覆盖内病灶重叠</span></h2><canvas id="C" class="canvas bar" role="img" aria-label="当前轴位的分束重叠率"></canvas></section>
+  <section class="card"><h2><span class="figure-letter">D</span><span id="d-title">当前层平均 FA</span></h2><canvas id="D" class="canvas bar" role="img" aria-label="当前轴位的分束平均 FA"></canvas></section>
+  <section class="card"><h2><span class="figure-letter">E</span>整束覆盖内病灶重叠</h2><canvas id="E" class="canvas bar" role="img" aria-label="每个 图谱 分束的整束重叠率"></canvas></section>
+  <section class="card"><h2><span class="figure-letter">F</span>沿轴位的分束 FA</h2><canvas id="F" class="canvas profile" role="img" aria-label="沿标准空间 z 的平均 FA 曲线，可点击选层"></canvas>
+    <p class="muted">点击 F 图可切换轴位。竖线标出当前 z。</p></section>
+</div>
+<details class="card details" id="summary"><summary>整束结果与区间</summary>__SUMMARY__</details>
+<details class="card details" id="details"><summary>查看当前层和整束的精确数值与分母</summary>
+<div class="scroll"><table><thead><tr><th>分束</th><th>该层命中 / 图谱</th><th>该层 T2 覆盖</th><th>该层重叠率</th><th>平均 FA</th><th>有效 FA / 图谱</th><th>整束命中 / 图谱</th><th>整束重叠率</th></tr></thead>
+<tbody id="numbers"></tbody></table></div>
+</details>
+<footer>
+  <p>C 和 E 显示视野内的病灶命中率 H/C。完整参考束的区间列在汇总表。D 和 F 按可用 FA 格点计算，详细分组和分母见导出的表格。空值表示分母为空。</p>
+  <p>研究预览。Boyne 2025 皮层分束是对可用掩膜的本地重放，DLPFC 待解决。</p>
+  <p id="error" class="error" role="status"></p>
+</footer>
+<noscript>启用 JavaScript 后可查看联动轴位和旋转三维轮廓。</noscript>
+</main>
+<script type="application/json" id="smatt-data">__DATA__</script>
+<script>
+"use strict";
+const by = id => document.getElementById(id);
+const data = JSON.parse(by("smatt-data").textContent);
+const [nx, ny, nz] = data.shape;
+const zmax = data.zmin + nz - 1;
+const side = by("side"), zSlider = by("z");
+const scene = by("scene"), axial = by("axial");
+const palette = ["#1479b2","#377f52","#a17c14","#cf672d","#864cbc","#b22b5a","#4d6fae","#006b72","#715c29","#515767"];
+const onDark = ["#61c9ff","#8de3a5","#f2d758","#ffad7e","#c69cfc","#ff8cc4","#afbfff","#79e4de","#f0d2a1","#d0d4e2"];
+const lesionColor = "#ff6e77";
+const views = {oblique:[-.56,-.59],axial:[0,-Math.PI/2],coronal:[0,0],sagittal:[-Math.PI/2,0]};
+let [yaw,pitch] = views.oblique, zoom = 1, drag = null, frame = 0;
+const raster = new Image();
+const plane = document.createElement("canvas");
+plane.width = nx;
+plane.height = ny;
+const planeContext = plane.getContext("2d");
+const decoded = new Map();
+let planeIndex = -1;
+const state = () => ({side:side.value,z:+zSlider.value,k:Math.round(+zSlider.value-data.zmin)});
+const zText = z => (z > 0 ? "+" : "") + z + " mm";
+const originKey = origin => side.value + "_" + origin;
+const percent = row => row && row[2] > 0 ? 100 * row[0] / row[2] : null;
+const formatPercent = v => v === null ? "—" : v.toFixed(2) + "%";
+const checked = id => by(id).checked;
+
+function fit(canvas) {
+  const {width:w,height:h} = canvas.getBoundingClientRect();
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const width = Math.round(w*dpr), height = Math.round(h*dpr);
+  if (canvas.width !== width || canvas.height !== height) { canvas.width = width; canvas.height = height; }
+  const ctx = canvas.getContext("2d");
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,w,h);
+  return {ctx,w,h};
+}
+function decode(encoded) {
+  if (!encoded) return null;
+  if (!decoded.has(encoded)) {
+    const bytes = atob(encoded), values = new Uint16Array(bytes.length / 2);
+    for (let i=0; i<values.length; i++) values[i]=bytes.charCodeAt(2*i)+256*bytes.charCodeAt(2*i+1);
+    decoded.set(encoded, values);
+  }
+  return decoded.get(encoded);
+}
+function texture(k) {
+  if (planeIndex === k || !raster.naturalWidth) return;
+  planeContext.clearRect(0,0,nx,ny);
+  planeContext.drawImage(raster,(k%data.columns)*nx,Math.floor(k/data.columns)*ny,
+    nx,ny,0,0,nx,ny);
+  planeIndex = k;
+}
+function visibleLayers() {
+  const layers = [];
+  if (checked("show-atlas")) for (const [i,origin] of data.origins.entries()) {
+    layers.push({color:onDark[i],slices:data.atlas[originKey(origin)],lesion:false});
+  }
+  if (checked("show-lesion")) layers.push({color:lesionColor,slices:data.cases.current.lesion,lesion:true});
+  return layers;
+}
+function segments(ctx, encoded, matrix) {
+  const vertices = decode(encoded);
+  if (!vertices) return;
+  const [a,b,c,d,x,y] = matrix;
+  for (let i=0;i<vertices.length;i+=4) {
+    ctx.moveTo(x+a*vertices[i]+c*vertices[i+1],y+b*vertices[i]+d*vertices[i+1]);
+    ctx.lineTo(x+a*vertices[i+2]+c*vertices[i+3],y+b*vertices[i+2]+d*vertices[i+3]);
+  }
+}
+function trace(ctx,layers,k,matrix) {
+  for (const layer of layers) {
+    ctx.beginPath();
+    segments(ctx,layer.slices[k],matrix);
+    ctx.strokeStyle = layer.color;
+    ctx.lineWidth = layer.lesion ? 1.9 : 1.35;
+    ctx.stroke();
+  }
+}
+function drawAxial(s,layers) {
+  const {ctx,w,h} = fit(axial);
+  const scale = Math.min((w-22)/nx,(h-22)/ny);
+  const x = (w-nx*scale)/2, y = (h-ny*scale)/2;
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(plane,x,y,nx*scale,ny*scale);
+  trace(ctx,layers,s.k,[scale,0,0,scale,x,y]);
+  ctx.fillStyle = "#dae9ef";
+  ctx.font = "600 12px system-ui";
+  ctx.fillText("L",11,h/2);
+  ctx.fillText("R",w-18,h/2);
+  ctx.fillText("A",w/2-5,15);
+  ctx.fillText("P",w/2-4,h-6);
+  axial.dataset.z = s.z;
+}
+function drawScene(s,layers) {
+  const {ctx,w,h} = fit(scene);
+  const cy = Math.cos(yaw), sy = Math.sin(yaw), cp = Math.cos(pitch), sp = Math.sin(pitch);
+  const scale = Math.min((w-18)/Math.max(nx,ny),(h-18)/Math.max(ny,nz))*.75*zoom;
+  function project(x,y,z) {
+    const a = y-(data.y_edge-ny/2);
+    return [w/2+scale*(cy*x-sy*a),h/2+scale*(-cp*(z-18)+sp*(sy*x+cy*a))];
+  }
+  function matrix(k) {
+    const [x,y] = project(data.x_edge,data.y_edge,data.zmin+k);
+    return [cy*scale,sp*sy*scale,sy*scale,-sp*cy*scale,x,y];
+  }
+  function stack(behind) {
+    for (const layer of layers) {
+      ctx.beginPath();
+      for (let k=0;k<nz;k+=2) {
+        if (k===s.k || (sp <= 0 ? k < s.k : k > s.k) !== behind) continue;
+        if (layer.slices[k]) segments(ctx,layer.slices[k],matrix(k));
+      }
+      ctx.strokeStyle = layer.color;
+      ctx.globalAlpha = layer.lesion ? .55 : .35;
+      ctx.lineWidth = layer.lesion ? 1.05 : .68;
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+  }
+  stack(true);
+  const m = matrix(s.k);
+  ctx.save();
+  ctx.transform(...m);
+  ctx.globalAlpha = .66;
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(plane,0,0);
+  ctx.restore();
+  stack(false);
+  trace(ctx,layers,s.k,m);
+  ctx.font = "600 12px system-ui";
+  ctx.fillStyle = "#e3f2f7";
+  ctx.fillText("RAS z " + zText(s.z),12,21);
+  const center = project(0,-17,18);
+  for (const [label,x,y,z,color] of [["R",14,0,0,"#ff989a"],["A",0,14,0,"#9ae4af"],["S",0,0,14,"#8fceff"]]) {
+    const tip = project(x,y-17,z+18);
+    const px = 35 + (tip[0]-center[0])/zoom, py = h-32 + (tip[1]-center[1])/zoom;
+    ctx.strokeStyle = ctx.fillStyle = color;
+    ctx.beginPath();ctx.moveTo(35,h-32);ctx.lineTo(px,py);ctx.stroke();ctx.fillText(label,px+2,py-2);
+  }
+  scene.dataset.z = s.z;
+  scene.dataset.camera = [yaw,pitch,zoom].map(v=>v.toFixed(3)).join(",");
+}
+
+function grid(ctx,w,h,maximum,ticks) {
+  const p = {left:50,top:18,right:w-17,bottom:h-40};
+  p.y = v => p.bottom-v/maximum*(p.bottom-p.top);
+  ctx.font = "12px system-ui";ctx.textAlign = "right";ctx.textBaseline = "middle";
+  for (const [v,text] of ticks) {
+    ctx.strokeStyle = "#dce7eb";ctx.beginPath();ctx.moveTo(p.left,p.y(v));ctx.lineTo(p.right,p.y(v));ctx.stroke();
+    ctx.fillStyle = "#3e5967";ctx.fillText(text,p.left-7,p.y(v));
+  }
+  ctx.strokeStyle = "#91a6b1";ctx.beginPath();ctx.moveTo(p.left,p.top);ctx.lineTo(p.left,p.bottom);ctx.lineTo(p.right,p.bottom);ctx.stroke();
+  return p;
+}
+function unavailable(ctx,w,h,text) {
+  ctx.fillStyle = "#f2f7f9";ctx.fillRect(57,h/2-19,w-81,38);
+  ctx.textAlign = "center";ctx.textBaseline = "middle";ctx.font = "13px system-ui";ctx.fillStyle = "#486574";
+  ctx.fillText(text,w/2+14,h/2);
+}
+function bar(id,values,max,ticks,kind,missingText) {
+  const {ctx,w,h} = fit(by(id));
+  const plot = grid(ctx,w,h,max,ticks);
+  const step = (plot.right-plot.left)/values.length, bw = step*.57;
+  ctx.textAlign = "center";ctx.textBaseline = "middle";ctx.font = "12px system-ui";
+  for (const [i,v] of values.entries()) {
+    const x = plot.left + step*(i+.5);
+    ctx.fillStyle = palette[i];
+    if (v !== null && v > 0) ctx.fillRect(x-bw/2,plot.y(v),bw,Math.max(1,plot.bottom-plot.y(v)));
+    ctx.fillStyle = "#203946";
+    ctx.fillText(data.origins[i],x,plot.bottom+17);
+    if (!missingText) {
+      ctx.font = "11px system-ui";
+      ctx.fillText(v===null ? "—" : v.toFixed(kind==="FA" ? 3 : 1) + (kind==="FA" ? "" : "%"),
+        x,Math.max(10,plot.y(v??0)-9));
+      ctx.font = "12px system-ui";
+    }
+  }
+  if (missingText) unavailable(ctx,w,h,missingText);
+}
+const faTicks = [0,.25,.5,.75,1].map(v=>[v,v.toFixed(2)]);
+const pctTicks = [0,25,50,75,100].map(v=>[v,v+"%"]);
+function drawProfile(s,regions,hasFA) {
+  const {ctx,w,h} = fit(by("F"));
+  const plot = grid(ctx,w,h,1,faTicks);
+  const x = z => plot.left + (z-data.zmin)/Math.max(1,zmax-data.zmin)*(plot.right-plot.left);
+  const f = by("F");
+  f.dataset.left = plot.left;f.dataset.right = plot.right;f.dataset.z = s.z;
+  ctx.font = "12px system-ui";ctx.fillStyle = "#3e5967";ctx.textAlign = "center";
+  for (const z of Array.from({length:6},(_,i)=>data.zmin+Math.round(i*(zmax-data.zmin)/5))) ctx.fillText(z,x(z),plot.bottom+15);
+  ctx.fillText("RAS z (mm)",(plot.left+plot.right)/2,h-7);
+  if (!hasFA) {unavailable(ctx,w,h,"该病例本轮无 FA 曲线");return;}
+  for (const [i,region] of regions.entries()) {
+    ctx.strokeStyle = ctx.fillStyle = palette[i];ctx.lineWidth = 1.7;ctx.beginPath();
+    let connected = false;
+    for (const [k,row] of region.slices.entries()) {
+      const fa = row?.[3] ?? null;
+      if (fa === null) {connected=false;continue;}
+      const px=x(k+data.zmin), py=plot.y(fa);
+      if (connected) ctx.lineTo(px,py); else ctx.moveTo(px,py);
+      connected = true;
+    }
+    ctx.stroke();
+  }
+  const cursor = x(s.z);
+  ctx.strokeStyle = "#293b45";ctx.lineWidth = 1;ctx.setLineDash([4,3]);
+  ctx.beginPath();ctx.moveTo(cursor,plot.top);ctx.lineTo(cursor,plot.bottom);ctx.stroke();ctx.setLineDash([]);
+  for (const [i,region] of regions.entries()) {
+    const v=region.slices[s.k]?.[3]??null;
+    if(v===null) continue;
+    ctx.fillStyle=palette[i];ctx.beginPath();ctx.arc(cursor,plot.y(v),3.1,0,2*Math.PI);ctx.fill();
+  }
+}
+function exactValues(regions,k,hasFA) {
+  const body = by("numbers");
+  body.replaceChildren(...regions.map((region,i) => {
+    const row = region.slices[k], whole = region.whole;
+    const texts = [data.origins[i],row?row[0]+" / "+row[1]:"—",row?row[2]+" / "+row[1]:"—",formatPercent(percent(row)),
+      row?.[3]!=null?row[3].toFixed(4):"—",row&&hasFA?row[4]+" / "+row[1]:"—",
+      whole[0]+" / "+whole[1],formatPercent(percent(whole))];
+    const tr = document.createElement("tr");
+    for (const text of texts) {const td = document.createElement("td");td.textContent=text;tr.append(td);}
+    return tr;
+  }));
+}
+function redraw() {
+  const s = state(), item = data.cases.current;
+  const layers = visibleLayers();
+  const regions = data.origins.map(origin=>item.regions[s.side+"_"+origin]);
+  texture(s.k);
+  drawScene(s,layers);drawAxial(s,layers);
+  const c = regions.map(r=>percent(r.slices[s.k]));
+  const d = regions.map(r=>r.slices[s.k]?.[3]??null);
+  const e = regions.map(r=>percent(r.whole));
+  const eMax = 100;
+  bar("C",c,100,pctTicks,"%");
+  bar("D",d,1,faTicks,"FA",item.has_fa?"":"该病例本轮无 FA 数据");
+  bar("E",e,eMax,[0,.25,.5,.75,1].map(r=>[r*eMax,+(r*eMax).toFixed(2)+"%"]),"%");
+  drawProfile(s,regions,item.has_fa);
+  by("z-value").textContent=zText(s.z);
+  by("axial-title").textContent="轴位切面 · z " + zText(s.z);
+  by("c-title").textContent="覆盖内病灶重叠 · z " + zText(s.z);
+  by("d-title").textContent="平均 FA · z " + zText(s.z);
+  for (const id of ["C","D"]) by(id).dataset.z=s.z;
+  by("C").dataset.values=JSON.stringify(c);
+  by("D").dataset.values=JSON.stringify(d);
+  by("E").dataset.values=JSON.stringify(e);
+  exactValues(regions,s.k,item.has_fa);
+  document.documentElement.dataset.ready = raster.naturalWidth ? "true" : "false";
+}
+function schedule() {
+  if (!frame) frame=requestAnimationFrame(()=>{frame=0;redraw();});
+}
+function setZ(z) {
+  zSlider.value=Math.min(zmax,Math.max(data.zmin,data.zmin+Math.round(z-data.zmin)));
+  schedule();
+}
+function zoomBy(factor) {zoom=Math.max(.65,Math.min(3.5,zoom*factor));schedule();}
+function clampPitch() {pitch=Math.max(-Math.PI/2,Math.min(Math.PI/2,pitch));}
+for (const element of [zSlider,side,by("show-lesion"),by("show-atlas")]) {
+  element.addEventListener(element===zSlider?"input":"change",schedule);
+}
+document.querySelectorAll("[data-view]").forEach(button=>button.addEventListener("click",()=>{
+  [yaw,pitch]=views[button.dataset.view];zoom=1;schedule();
+}));
+scene.addEventListener("pointerdown",event=>{
+  if (drag || event.button!==0) return;
+  scene.setPointerCapture(event.pointerId);drag=[event.pointerId,event.clientX,event.clientY];
+});
+scene.addEventListener("pointermove",event=>{
+  if (!drag || event.pointerId!==drag[0]) return;
+  yaw+=(event.clientX-drag[1])*.010;pitch+=(event.clientY-drag[2])*.010;
+  drag=[event.pointerId,event.clientX,event.clientY];clampPitch();schedule();
+});
+scene.addEventListener("lostpointercapture",()=>{drag=null;});
+scene.addEventListener("wheel",event=>{event.preventDefault();zoomBy(Math.exp(-Math.max(-120,Math.min(120,event.deltaY))*.002));},{passive:false});
+scene.addEventListener("keydown",event=>{
+  switch(event.key) {
+    case "ArrowLeft":yaw-=.13;break;case "ArrowRight":yaw+=.13;break;
+    case "ArrowUp":pitch-=.13;break;case "ArrowDown":pitch+=.13;break;
+    case "+":case "=":zoomBy(1.2);break;case "-":zoomBy(.83);break;default:return;
+  }
+  event.preventDefault();clampPitch();schedule();
+});
+axial.addEventListener("keydown",event=>{
+  if (event.key==="ArrowUp" || event.key==="ArrowDown") {
+    event.preventDefault();setZ(+zSlider.value+(event.key==="ArrowUp"?1:-1));
+  }
+});
+by("F").addEventListener("click",event=>{
+  if (!data.cases.current.has_fa) return;
+  const f=by("F"), x=event.clientX-f.getBoundingClientRect().left;
+  setZ(data.zmin+(x-(+f.dataset.left))/(+f.dataset.right-(+f.dataset.left))*Math.max(1,zmax-data.zmin));
+});
+for (const [i,name] of [...data.origins,"病灶"].entries()) {
+  const row=document.createElement("span"),swatch=document.createElement("i");
+  swatch.className="swatch";swatch.style.background=(i<data.origins.length?onDark[i]:lesionColor);
+  row.append(swatch,document.createTextNode(name));by("legend").append(row);
+}
+zSlider.min=data.zmin;zSlider.max=zmax;zSlider.value=data.zmin+Math.floor((nz-1)/2);
+const observer=new ResizeObserver(schedule);
+for (const id of ["scene","axial","C","D","E","F"]) observer.observe(by(id));
+raster.onload=schedule;
+raster.onerror=()=>{by("error").textContent="MNI 背景读取失败。请重新打开完整 HTML 文件。";};
+raster.src="data:image/png;base64,"+data.background;
+schedule();
+</script>
+</body></html>

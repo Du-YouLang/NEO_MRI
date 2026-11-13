@@ -1,0 +1,12 @@
+{
+  "schema": "neo-lesionload-1",
+  "methods": ["SMATT", "HCPA", "Boyne2025"],
+  "asset_dir": "local/reference_assets",
+  "t2": {
+    "schema": "neo-t2-lesion-propagation-1",
+    "structural_run": "local/reviewed_t2_run",
+    "branch": "n4_independent_HDBET",
+    "lesion": "local/original_T2_lesion.nii.gz",
+    "lesion_sha256": "<replace-with-actual-sha256>"
+  }
+}

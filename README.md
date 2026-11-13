@@ -6,6 +6,8 @@
 
 CST／CRP 追踪与筛选使用独立的 python run_tractography.py 入口，可重放已存父流线并生成审核报告。详见 [操作与审核](docs/TRACTOGRAPHY.md)、[分步处理](notebooks/Tractography.ipynb)和[合成数据教程](notebooks/Tractography_Tutorial.ipynb)。
 
+SMATT、HCPA Max-WLL 与 Boyne 2025 方法 C 的病灶重叠使用独立的 python run_lesionload.py 入口。详见[方法与操作](docs/LESIONLOAD.md)及[合成教程](notebooks/Lesionload_Tutorial.ipynb)。
+
 T1默认HD-BET 2.0.1 CPU/noTTA；SynthStrip和ANTs两个脑提取模板显式可选，不自动后备。原生脑掩膜人工批准后，导出审核T1/mask，再进行组织分割与T1→MNI，保存实际mask采用证据，结合闪烁/切片、往返与形变审核。工具固定4线程。
 
 T2使用已冻结的`T2_structural_v1`。默认HD-BET脑域为主结果，T1脑域为补充/显式可选；原始强度/N4均保留，不擅自指定唯一强度方案。已有批准T1/MNI变换复用，单次组合重采样与两次插值对照保留。详见[T2说明](docs/T2_STABLE_V1.md)。

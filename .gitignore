@@ -24,3 +24,5 @@ work/
 *.tck
 *.npy
 *.npz
+*.trk
+*.trk.gz
