@@ -14,23 +14,24 @@ from tractography.geometry import mapped_label
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("stage", choices=("demo", "fit-plan", "fit", "track-plan", "track",
-                                          "map-label", "screen", "export", "report"))
+                                          "map-label", "audit-label", "screen", "export", "report"))
     parser.add_argument("--config", type=Path)
     parser.add_argument("--results", type=Path)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--run")
     parser.add_argument("--gate")
     args = parser.parse_args()
-    if args.stage in {"fit-plan", "fit", "track-plan", "track", "screen", "map-label"} and not args.config:
+    if args.stage in {"fit-plan", "fit", "track-plan", "track", "screen", "map-label", "audit-label"} and not args.config:
         parser.error("--config is required")
     if args.stage in {"export", "report"} and not args.results:
         parser.error("--results is required")
     if args.stage == "demo":
         from tractography.demo import demo
         result = demo(args.output)
-    elif args.stage == "map-label":
+    elif args.stage in {"map-label", "audit-label"}:
         config = args.config.resolve(strict=True)
-        result = mapped_label(workflow.read(config), config.parent, args.output)
+        result = mapped_label(workflow.read(config), config.parent, args.output,
+                              technical_replay=args.stage == "audit-label")
     elif args.stage == "export":
         if not args.run or not args.gate:
             parser.error("export requires --run and --gate")

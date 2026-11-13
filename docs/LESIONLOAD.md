@@ -20,6 +20,8 @@ python run_lesionload.py demo --output work/lesionload_demo
 2. 按 [资产来源与哈希](../lesionload/reference_assets.lock.json)准备本地资产。可使用 `asset_dir` 指向同一目录，或用 `asset_paths` 按清单文件名登记现存路径。SMATT 从官方 ZIP 读取 12 个二值成员。HCPA 读取固定版本的左右二值模板。Gen6 需要固定背景及用于数值求逆的 TemplateFlow H5。Boyne 需要左右派生计数图，可从已核验资产复用，或使用下方命令重建。
 3. 运行时选择一个或多个方法和一个新输出目录。每个方法生成病灶、源 T2 视野掩膜、整束和轴位 CSV，以及独立 HTML。总回执包含网格、分支、输入和输出哈希。正式报告和病例配置存到个体访视结果下。
 
+在新计算前登记同一访视的 [空间审核回执](SPATIAL_INPUT_REVIEW.md)。启用 FA 时另提供配准和模型来源审核。已有结构批准可以在证据确实覆盖所选分支、原始病灶与变换时复用。
+
 ```powershell
 python run_lesionload.py build-boyne --assets local/reference_assets --output work/boyne_count_maps
 python run_lesionload.py run --config lesionload.local.json --output work/lesionload_subject

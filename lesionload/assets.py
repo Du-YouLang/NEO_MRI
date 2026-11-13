@@ -9,6 +9,7 @@ import nibabel as nib
 import numpy as np
 
 from anatomy_review import file_record
+from spatial_contract import BRIDGE_SOURCE
 from . import boyne
 from .spatial import MNI6, MNI2009C, binary, checked, image_grid, target_grid
 
@@ -16,7 +17,6 @@ from .spatial import MNI6, MNI2009C, binary, checked, image_grid, target_grid
 LOCK_PATH = Path(__file__).with_name("reference_assets.lock.json")
 HCPA_AFFINE = np.eye(4)
 HCPA_AFFINE[:3, 3] = [-96, -132, -78]
-BRIDGE_SOURCE = "tpl-MNI152NLin2009cAsym_from-MNI152NLin6Asym_mode-image_xfm.h5"
 GEN6_BACKGROUND = "tpl-MNI152NLin6Asym_res-01_desc-brain_T1w.nii.gz"
 METHODS = {"SMATT": MNI6, "HCPA": MNI2009C, "Boyne2025": MNI6}
 

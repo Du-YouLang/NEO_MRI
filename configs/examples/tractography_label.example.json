@@ -1,4 +1,10 @@
 {
+  "visit": {"dataset": "replace-with-source-dataset", "subject": "demo", "session": "01"},
+  "t1_reference": {"path": "replace/native_T1w.nii.gz", "sha256": "<replace-with-actual-sha256>"},
+  "mni2009c_reference": {"path": "replace/2009c_T1w.nii.gz", "sha256": "<replace-with-actual-sha256>"},
+  "atlas_reference": {"path": "replace/Gen6_T1w.nii.gz", "sha256": "<replace-with-actual-sha256>"},
+  "landmarks": {"path": "replace/landmarks.json", "sha256": "<replace-with-actual-sha256>"},
+  "spatial_review": {"path": "replace/cst_atlas_mapping.review.json", "sha256": "<replace-with-actual-sha256>"},
   "label": {
     "path": "replace/atlas_binary.nii.gz",
     "sha256": "<replace-with-actual-sha256>"
@@ -40,8 +46,8 @@
       "sha256": "<replace-with-actual-sha256>"
     },
     "mni6_to_mni2009c_image_h5": {
-      "path": "replace/from-MNI152NLin6Asym_to-MNI152NLin2009cAsym_mode-image_xfm.h5",
-      "sha256": "<replace-with-actual-sha256>"
+      "path": "replace/tpl-MNI152NLin2009cAsym_from-MNI152NLin6Asym_mode-image_xfm.h5",
+      "sha256": "2e3869a07b96aec406e0419ca2e434afc54882d37cc212b933b139d1b63a4dfe"
     }
   }
 }

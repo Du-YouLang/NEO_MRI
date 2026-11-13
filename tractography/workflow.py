@@ -12,7 +12,7 @@ import time
 import nibabel as nib
 import numpy as np
 
-from .geometry import MNI6, atlas_pull, checked, digest, load_mask, load_reference
+from .geometry import MNI6, checked, digest, load_mask, load_reference, mapping_context
 from .screening import GATE_ROLES, Screening, core_mask, read_tck_header, slab_indices
 
 MODELS = {"Tensor_Det": "Tensor_Det", "ST_iFOD2": "iFOD2"}
@@ -262,14 +262,14 @@ def laterality(data, base):
     if "anatomy" not in data:
         if data.get("synthetic") is not True:
             raise ValueError("An approved DWI-to-atlas physical coordinate chain is required")
-        return lambda point: "L" if point[0] < 0 else "R"
-    pull = atlas_pull(data["anatomy"], base, MNI6)
+        return (lambda point: "L" if point[0] < 0 else "R"), None
+    pull, _, _, evidence = mapping_context(data, base, MNI6)
 
     def classify_side(point):
         x, y, z = map(float, point)
         return "L" if pull.TransformPoint((-x, -y, z))[0] > 0 else "R"
 
-    return classify_side
+    return classify_side, evidence
 
 
 def screen(path, output):
@@ -284,7 +284,7 @@ def screen(path, output):
     gate_support = mask(data["gate_support"])
     masks = {f"{role}_{side}": mask(data["gates"][f"{role}_{side}"])
              for role in GATE_ROLES for side in "LR"}
-    side_at = laterality(data, base)
+    side_at, laterality_evidence = laterality(data, base)
     slab_mm = mm(data["slab_mm"], "slab_mm")
     slabs = slab_indices(ref.shape, ref.affine, slab_mm)
     output = output.resolve()
@@ -323,7 +323,8 @@ def screen(path, output):
     result = {"schema": "neo-tractography-result-1",
               "reference": {"path": str(reference), "sha256": data["reference"]["sha256"].lower()},
               "config_sha256": digest(output / "inputs.local.json"),
-              "slab_mm": slab_mm, "core_fraction": .15, "runs": rows}
+              "slab_mm": slab_mm, "core_fraction": .15, "runs": rows,
+              "laterality_evidence": laterality_evidence}
     write(output / "results.json", result)
     return result
 

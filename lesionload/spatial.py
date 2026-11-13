@@ -7,20 +7,16 @@ import numpy as np
 from scipy.ndimage import map_coordinates
 
 from anatomy_review import file_record
+from spatial_contract import MNI2009C, MNI6, checked, require_review
 from structural_multimodal import compose_pull, resample, sitk_module
 from t2_lesion_propagation import check_nifti_grid, plan, same_geometry
 
 
-MNI2009C = "MNI152NLin2009cAsym"
-MNI6 = "MNI152NLin6Asym"
 RAS_LPS = np.array([-1., -1., 1.])
-
-
-def checked(item, root):
-    path = (root / item["path"]).resolve(strict=True)
-    if file_record(path)["sha256"] != item["sha256"]:
-        raise ValueError(f"File hash mismatch: {path}")
-    return path
+T2_DIRECTIONS = {"t1_to_t2_pull": ["LPS_mm", "T1w", "native_T2w"],
+                 "mni_to_t1_pull": ["LPS_mm", MNI2009C, "T1w"]}
+FA_DIRECTIONS = {"flirt_dwi_to_t1": ["FSL_scaled_voxels", "DWI", "T1w"],
+                 "flirt_inverse": ["FSL_scaled_voxels", "T1w", "DWI"]}
 
 
 def image_grid(path, reference=None):
@@ -52,7 +48,7 @@ def transform_points(transform, points):
     return np.array([transform.TransformPoint(tuple(point)) for point in points]).reshape(-1, 3)
 
 
-def t2_chain(config, base, stage):
+def t2_chain(config, base, stage, visit, review):
     """Load the original mask and explicit T1/2009c point pulls."""
     sitk = sitk_module()
     if sitk.Version_VersionString() != "2.5.6":
@@ -71,12 +67,19 @@ def t2_chain(config, base, stage):
         )}
         if file_record(paths["lesion"])["sha256"] != config["lesion_sha256"]:
             raise ValueError("Original lesion hash mismatch")
+        bindings = {role: records[role]["sha256"] for role in paths}
+        bindings["structural_receipt"] = provenance["structural_receipt"]["sha256"]
+        bindings["structural_request"] = provenance["structural_request"]["sha256"]
     else:
         paths = {key: checked(config[key], base) for key in (
             "source", "lesion", "t1", "mni", "t1_to_t2_pull", "mni_to_t1_pull", "review"
         )}
         provenance = {"profile": "archived_explicit_chain",
                       "inputs": {key: file_record(path) for key, path in paths.items()}}
+        bindings = {role: record["sha256"] for role, record in provenance["inputs"].items()}
+    provenance["input_review"] = require_review(
+        review, base, visit=visit, scope="lesion_load", inputs=bindings,
+        directions=T2_DIRECTIONS, branch=provenance.get("branch"))
     source = image_grid(paths["source"])
     lesion_grid = image_grid(paths["lesion"], source)
     binary(lesion_grid)
@@ -127,12 +130,18 @@ def fsl_coordinates(image):
     return matrix
 
 
-def native_fa(config, base, t1_path):
+def native_fa(config, base, t1_path, visit, review):
     paths = {key: checked(config[key], base) for key in (
-        "b0", "fa", "md", "fit_mask", "flirt_dwi_to_t1", "flirt_inverse", "review", "reviewed_mask_in_t1"
+        "b0", "fa", "md", "fit_mask", "flirt_dwi_to_t1", "flirt_inverse", "review",
+        "reviewed_mask_in_t1", "model_receipt"
     )}
     if file_record(t1_path)["sha256"] != config["t1_sha256"]:
         raise ValueError("FA registration belongs to another T1")
+    records = {key: file_record(path) for key, path in paths.items()}
+    input_review = require_review(
+        review, base, visit=visit, scope="lesion_load_fa",
+        inputs={"t1": config["t1_sha256"], **{key: entry["sha256"] for key, entry in records.items()}},
+        directions=FA_DIRECTIONS)
     b0, t1 = image_grid(paths["b0"]), image_grid(t1_path)
     fa, md = (np.asanyarray(image_grid(paths[key], b0).dataobj) for key in ("fa", "md"))
     fit = binary(image_grid(paths["fit_mask"], b0))
@@ -157,10 +166,8 @@ def native_fa(config, base, t1_path):
     dice = float(2 * (archived & replay).sum() / denominator) if denominator else 0.
     if dice < .999:
         raise ValueError("FLIRT replay disagrees with the reviewed T1 mask")
-    provenance = {"files": {key: file_record(path) for key, path in paths.items()},
+    provenance = {"files": records, "input_review": input_review,
                   "replay_t1_mask_dice": dice, "native_valid_voxels": int(valid.sum())}
-    if config.get("model_receipt"):
-        provenance["files"]["model_receipt"] = file_record(checked(config["model_receipt"], base))
     return b0.affine, fa, valid, pull, provenance
 
 

@@ -37,7 +37,7 @@ python run_tractography.py export --results work/screened --run ST_iFOD2_L_M1 --
 
 **拟合和追踪的额外字段。** fit 需要在相同 b0 网格准备两个已校正、带梯度表的单壳 MIF，并分别声明目标 b 值。track 使用同一份筛选配置的参考、脑域和 runs 元数据，每个 run 额外登记带哈希的 tracker_input 和 rng_seed。Tensor_Det 的 tracker_input 是校正单壳 DWI，另填 shell_b。ST_iFOD2 的 tracker_input 是 lmax=6 的白质 FOD。父 TCK 和种子日志由追踪生成。原生入口成功后输出 replay.local.json 供 screen 使用。
 
-**原生空间图谱。** map-label 输入已阈值化的二值标签。图谱在 MNI152NLin2009cAsym 时，从目标 DWI 点依次映射到个体 T1 和 MNI2009c。图谱在 MNI152NLin6Asym 时，再接 MNI2009c 到 MNI6 的坐标变换。配置里两个 H5 按影像方向命名，重采样读取的是从输出坐标回查输入坐标的映射。刚体矩阵以 RAS 给出，执行时转换为 LPS。组合后进行一次最近邻采样。图谱和标准空间变换由使用者按各自许可准备。
+**原生空间图谱。** map-label 输入已阈值化的二值标签。图谱在 MNI152NLin2009cAsym 时，从目标 DWI 点依次回查个体 T1 和 MNI2009c。图谱在 MNI152NLin6Asym 时，再接锁定的 MNI2009c → Gen6 点变换。配置里的 H5 按影像方向命名。刚体矩阵以 RAS 给出，执行时转换为 LPS。组合后进行一次最近邻采样。图谱和标准空间变换由使用者按各自许可准备。正式图谱映射及真实 `screen` 的侧别判定都读取绑定实际影像、变换和解剖地标的审核记录。用 `audit-label` 在新目录生成待审核候选，见[空间审核回执](SPATIAL_INPUT_REVIEW.md)。
 
 ## 这些参数回答什么问题
 

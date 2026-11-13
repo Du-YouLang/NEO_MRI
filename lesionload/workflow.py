@@ -8,6 +8,7 @@ import nibabel as nib
 import numpy as np
 
 from anatomy_review import file_record, save_new
+from spatial_contract import locked_template_bridge, visit_identity
 from structural_multimodal import compose_pull, resample, sitk_module
 from t2_lesion_propagation import write_verified
 from .assets import BRIDGE_SOURCE, METHODS, locked_file, real_atlas
@@ -82,11 +83,15 @@ def run(config_path, output):
     affected_side = config.get("affected_side")
     if "fa" in config and any(method != "Boyne2025" for method in methods) and affected_side not in ("Left", "Right"):
         raise ValueError("SMATT and HCPA FA require the reviewed affected side")
-    paths, provenance, label, fov, t1_to_t2, mni_to_t1 = t2_chain(config["t2"], base, output)
-    model = native_fa(config["fa"], base, paths["t1"]) if "fa" in config else None
+    visit = visit_identity(config.get("visit"))
+    if "spatial_review" not in config or ("fa" in config and "fa_spatial_review" not in config):
+        raise ValueError("Provide a spatial review bound to this analysis and visit, including FA if enabled")
+    paths, provenance, label, fov, t1_to_t2, mni_to_t1 = t2_chain(
+        config["t2"], base, output, visit, config["spatial_review"])
+    model = native_fa(config["fa"], base, paths["t1"], visit, config["fa_spatial_review"]) if "fa" in config else None
     output.mkdir(parents=True)
     receipt = {"schema": SCHEMA, "status": "COMPUTED_REVIEW_PENDING", "synthetic": synthetic,
-               "config": file_record(config_path), "t2": provenance,
+               "config": file_record(config_path), "visit": visit, "t2": provenance,
                "fa": model[-1] if model else None, "methods": {},
                "dlpfc": "DLPFC 待解决", "clinical_validation": False,
                "resampling": "One nearest-neighbour sample from original T2 labels and source FOV per atlas",
@@ -120,7 +125,7 @@ def run(config_path, output):
                         for tract in related.values():
                             support |= tract
                 bridge, bridge_qc = invert_template_bridge(
-                    sitk_module().ReadTransform(str(bridge_path)), target, support.T, reference.affine)
+                    locked_template_bridge(file_record(bridge_path), base), target, support.T, reference.affine)
                 bridge_qc = dict(bridge_qc, source=file_record(bridge_path))
                 receipt["gen6_bridge"] = bridge_qc
             else:
